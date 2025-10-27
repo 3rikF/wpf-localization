@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Source/ErikForwerk.Localization.WPF/ErikForwerk.Localization.WPF.csproj" />
+  <Project Path="WpfLocalizationExample\WpfLocalizationExample.csproj" />
+</Solution>

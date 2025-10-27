@@ -1,0 +1,90 @@
+﻿<Window
+	x:Class			="WpfLocalizationTest.Views.MainWindow"
+	xmlns			="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x			="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local		="clr-namespace:WpfLocalizationTest"
+	xmlns:loc		="clr-namespace:ErikForwerk.Localization.WPF;assembly=ErikForwerk.Localization.WPF"
+	xmlns:vm		="clr-namespace:WpfLocalizationTest.ViewModels"
+
+	xmlns:mc		="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:d			="http://schemas.microsoft.com/expression/blend/2008"
+	mc:Ignorable	="d"
+	d:DataContext	="{d:DesignInstance Type=vm:MainWindowViewModel}"
+	Title			="MainWindow"
+	SizeToContent	="Height"
+	ResizeMode		="NoResize"
+
+	Width			="350"
+	MinWidth		="150"
+	MaxWidth		="450"
+	Language		="{Binding SelectedCulture}"
+	>
+
+	<StackPanel
+		Margin ="0, 0, 10, 10"
+		>
+
+		<ComboBox
+			x:Name				="cmbLanguage"
+			Margin				="10, 10, 0, 0"
+			HorizontalAlignment	="Stretch"
+			DisplayMemberPath	="DisplayName"
+
+			ItemsSource			="{Binding SupportedCultures}"
+			SelectedItem		="{Binding SelectedCulture}"
+			/>
+
+
+		<TextBlock
+			Margin		="10, 10, 0, 0"
+			Text		="Static Translation"
+			FontWeight	="Bold"
+			/>
+
+		<TextBlock
+			Margin		="10, 0, 0, 0"
+			Text		="{loc:Localization OtherTextKey}"
+			/>
+
+		<TextBlock
+			Margin		="10, 10, 0, 0"
+			Text		="Bound Translation"
+			FontWeight	="Bold"
+			/>
+
+		<TextBlock
+			Margin		="10, 0, 0, 0"
+			Text		="{loc:Localization {Binding SampleLangKey}}"
+			/>
+
+		<TextBlock
+			Margin		="10, 10, 0, 0"
+			Text		="Translation containing place-holder"
+			FontWeight	="Bold"
+			/>
+
+		<TextBlock
+			Margin		="10, 0, 0, 0"
+			Text		="{loc:Localization 'Foobar: %PartA% + %PartB% + %Missing%', ParsePlaceholders=True}"
+			/>
+
+		<TextBlock
+			Margin		="10, 10, 0, 0"
+			Text		="Missing Translation"
+			FontWeight	="Bold"
+			/>
+
+		<TextBlock
+			Margin		="10, 0, 0, 0"
+			Text		="{loc:Localization Blah:Foobar}"
+			/>
+
+		<Button
+			Margin		="10, 10, 0, 0"
+			HorizontalAlignment="Stretch"
+			Content		="{loc:Localization Button:ChangeText}"
+			Command		="{Binding CmdChangeBoundLangKey}"
+			/>
+
+	</StackPanel>
+</Window>

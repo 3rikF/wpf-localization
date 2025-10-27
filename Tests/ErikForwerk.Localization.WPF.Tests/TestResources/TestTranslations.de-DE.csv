@@ -1,0 +1,4 @@
+// German test translations
+TestKey1;TestWert1
+TestKey2;TestWert2
+TestKey3;Wert\r\nmit\nZeilenumbruch

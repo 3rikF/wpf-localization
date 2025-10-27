@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Tests/ErikForwerk.Localization.WPF.Tests/ErikForwerk.Localization.WPF.Tests.csproj" Id="be05dd38-ae9b-42f2-af9c-a986af4cbe91" />
+  <Project Path="Source/ErikForwerk.Localization.WPF/ErikForwerk.Localization.WPF.csproj" />
+</Solution>
