@@ -1,2 +1,2 @@
 # wpf-localization
-A small localitation framework for WPF/XAML
+A small localization framework for WPF/XAML
