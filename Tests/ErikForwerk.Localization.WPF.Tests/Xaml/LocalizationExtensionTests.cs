@@ -28,7 +28,7 @@ public sealed class LocalizationExtensionTests
 			, binding
 		) as BindingExpression;
 
-		return expression;
+		return expression!;
 	}
 
 	#endregion Helper Methods

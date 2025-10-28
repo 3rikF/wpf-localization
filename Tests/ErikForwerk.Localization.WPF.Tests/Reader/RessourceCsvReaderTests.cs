@@ -114,6 +114,8 @@ public sealed class RessourceCsvReaderTests
 		ISingleCultureDictionary	dictionary		= localizations[0];
 
 		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(expectedCultureName, dictionary.Culture.Name);
+
 		Assert.True(dictionary.ContainsKey(TEST_KEY1));
 		Assert.True(dictionary.ContainsKey(TEST_KEY2));
 
