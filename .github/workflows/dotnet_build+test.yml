@@ -116,16 +116,25 @@ jobs:
           $latestTag = "v0.0.0"
         } else {
           # Sort tags by semantic version
-          $latestTag = $tags | ForEach-Object {
+          $validTags = $tags | ForEach-Object {
             $version = $_.TrimStart('v')
             $parts = $version.Split('.')
-            [PSCustomObject]@{
-              Tag = $_
-              Major = [int]$parts[0]
-              Minor = [int]$parts[1]
-              Patch = [int]$parts[2]
+            # Validate tag format
+            if ($parts.Count -eq 3 -and $parts[0] -match '^\d+$' -and $parts[1] -match '^\d+$' -and $parts[2] -match '^\d+$') {
+              [PSCustomObject]@{
+                Tag = $_
+                Major = [int]$parts[0]
+                Minor = [int]$parts[1]
+                Patch = [int]$parts[2]
+              }
             }
-          } | Sort-Object -Property Major, Minor, Patch -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Tag
+          }
+          $latestTag = $validTags | Sort-Object -Property Major, Minor, Patch -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Tag
+
+          if ([string]::IsNullOrEmpty($latestTag)) {
+            # No valid tags found, start with v0.0.0
+            $latestTag = "v0.0.0"
+          }
         }
 
         # Remove 'v' prefix and split version
