@@ -107,28 +107,40 @@ jobs:
       run: |
         # Fetch all tags
         git fetch --tags
-        
+
         # Get the latest version tag (assuming semantic versioning vX.Y.Z)
-        $latestTag = git tag -l "v*.*.*" | Sort-Object -Descending | Select-Object -First 1
-        
-        if ([string]::IsNullOrEmpty($latestTag)) {
+        $tags = git tag -l "v*.*.*"
+
+        if ($tags.Count -eq 0) {
           # No existing tags, start with v0.0.0
           $latestTag = "v0.0.0"
+        } else {
+          # Sort tags by semantic version
+          $latestTag = $tags | ForEach-Object {
+            $version = $_.TrimStart('v')
+            $parts = $version.Split('.')
+            [PSCustomObject]@{
+              Tag = $_
+              Major = [int]$parts[0]
+              Minor = [int]$parts[1]
+              Patch = [int]$parts[2]
+            }
+          } | Sort-Object -Property Major, Minor, Patch -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Tag
         }
-        
+
         # Remove 'v' prefix and split version
         $version = $latestTag.TrimStart('v')
         $versionParts = $version.Split('.')
         $major = [int]$versionParts[0]
         $minor = [int]$versionParts[1]
         $patch = [int]$versionParts[2]
-        
+
         # Bump version based on input
         $bump = "${{ github.event.inputs.bump }}"
         if ([string]::IsNullOrEmpty($bump)) {
           $bump = "patch"
         }
-        
+
         switch ($bump) {
           "major" {
             $major++
@@ -143,13 +155,13 @@ jobs:
             $patch++
           }
         }
-        
+
         $newVersion = "$major.$minor.$patch"
         $newTag = "v$newVersion"
-        
+
         Write-Host "Previous version: $latestTag"
         Write-Host "New version: $newTag"
-        
+
         # Set output
         echo "version=$newVersion" >> $env:GITHUB_OUTPUT
         echo "tag=$newTag" >> $env:GITHUB_OUTPUT
