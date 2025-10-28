@@ -45,16 +45,19 @@ jobs:
 
     # taken from a Codecov example
     - name: Upload coverage reports to Codecov
-    # uses: codecov/codecov-action@v4
-      uses: codecov/codecov-action@v5
+      #uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage/**/*.xml
+        files: ./TestResults/**/*.cobertura.xml
         flags: unittests
     #   name: codecov-umbrella
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:Configuration
+      run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:ConfigurationMicrosoft.QuickAction.NearShare
       env:
         Configuration: ${{ matrix.CONFIGURATION }}
+
+D:\a\wpf-localization\wpf-localization\Tests\ErikForwerk.Localization.WPF.Tests\TestResults\c2eb14f6-01c8-46cf-90b1-28b4c607b490\coverage.json
+  D:\a\wpf-localization\wpf-localization\Tests\ErikForwerk.Localization.WPF.Tests\TestResults\c2eb14f6-01c8-46cf-90b1-28b4c607b490\coverage.cobertura.xml
