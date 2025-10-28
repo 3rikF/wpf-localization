@@ -55,6 +55,6 @@ jobs:
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:ConfigurationMicrosoft.QuickAction.NearShare
+      run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.CONFIGURATION }}
