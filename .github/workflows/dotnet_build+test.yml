@@ -5,6 +5,17 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
 
@@ -39,9 +50,17 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    # Execute all unit tests in the solution
+    # Build the solution
+    - name: Build solution
+      run: dotnet build $env:SOLUTION_NAME --configuration $env:Configuration --no-restore
+      env:
+        Configuration: ${{ matrix.CONFIGURATION }}
+
+    # Execute all unit tests in the solution without rebuilding
     - name: Execute unit tests
-      run: dotnet test $env:SOLUTION_NAME --collect:"XPlat Code Coverage;Format=json,cobertura"
+      run: dotnet test $env:SOLUTION_NAME --configuration $env:Configuration --no-build --collect:"XPlat Code Coverage;Format=json,cobertura"
+      env:
+        Configuration: ${{ matrix.CONFIGURATION }}
 
     # taken from a Codecov example
     - name: Upload coverage reports to Codecov
@@ -58,3 +77,99 @@ jobs:
       run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.CONFIGURATION }}
+
+  #----------------------------------------------------------------------------------------------------------------------------------------
+  publish:
+    needs: build
+    # Only run on main branch when tests are successful
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+
+    env:
+      SOLUTION_NAME: "./WpfLocalizationTest.slnx"
+      PROJECT_PATH: "./Source/ErikForwerk.Localization.WPF/ErikForwerk.Localization.WPF.csproj"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    # Determine the latest version tag and calculate new version
+    - name: Determine new version
+      id: version
+      run: |
+        # Fetch all tags
+        git fetch --tags
+        
+        # Get the latest version tag (assuming semantic versioning vX.Y.Z)
+        $latestTag = git tag -l "v*.*.*" | Sort-Object -Descending | Select-Object -First 1
+        
+        if ([string]::IsNullOrEmpty($latestTag)) {
+          # No existing tags, start with v0.0.0
+          $latestTag = "v0.0.0"
+        }
+        
+        # Remove 'v' prefix and split version
+        $version = $latestTag.TrimStart('v')
+        $versionParts = $version.Split('.')
+        $major = [int]$versionParts[0]
+        $minor = [int]$versionParts[1]
+        $patch = [int]$versionParts[2]
+        
+        # Bump version based on input
+        $bump = "${{ github.event.inputs.bump }}"
+        if ([string]::IsNullOrEmpty($bump)) {
+          $bump = "patch"
+        }
+        
+        switch ($bump) {
+          "major" {
+            $major++
+            $minor = 0
+            $patch = 0
+          }
+          "minor" {
+            $minor++
+            $patch = 0
+          }
+          "patch" {
+            $patch++
+          }
+        }
+        
+        $newVersion = "$major.$minor.$patch"
+        $newTag = "v$newVersion"
+        
+        Write-Host "Previous version: $latestTag"
+        Write-Host "New version: $newTag"
+        
+        # Set output
+        echo "version=$newVersion" >> $env:GITHUB_OUTPUT
+        echo "tag=$newTag" >> $env:GITHUB_OUTPUT
+
+    # Create and push new version tag
+    - name: Create version tag
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag ${{ steps.version.outputs.tag }}
+        git push origin ${{ steps.version.outputs.tag }}
+
+    # Build the solution with new version
+    - name: Build solution
+      run: dotnet build $env:PROJECT_PATH --configuration Release /p:Version=${{ steps.version.outputs.version }}
+
+    # Pack the NuGet package
+    - name: Pack NuGet package
+      run: dotnet pack $env:PROJECT_PATH --configuration Release --no-build /p:PackageVersion=${{ steps.version.outputs.version }} --output ./nupkg
+
+    # Publish to NuGet.org
+    - name: Publish to NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
