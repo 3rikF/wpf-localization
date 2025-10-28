@@ -58,6 +58,3 @@ jobs:
       run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:ConfigurationMicrosoft.QuickAction.NearShare
       env:
         Configuration: ${{ matrix.CONFIGURATION }}
-
-D:\a\wpf-localization\wpf-localization\Tests\ErikForwerk.Localization.WPF.Tests\TestResults\c2eb14f6-01c8-46cf-90b1-28b4c607b490\coverage.json
-  D:\a\wpf-localization\wpf-localization\Tests\ErikForwerk.Localization.WPF.Tests\TestResults\c2eb14f6-01c8-46cf-90b1-28b4c607b490\coverage.cobertura.xml
