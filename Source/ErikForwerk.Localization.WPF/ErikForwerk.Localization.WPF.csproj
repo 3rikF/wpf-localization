@@ -5,6 +5,18 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- NuGet Package Properties -->
+    <PackageId>ErikForwerk.Localization.WPF</PackageId>
+    <Authors>Erik Forwerk</Authors>
+    <Company>Erik Forwerk</Company>
+    <Description>A small localization framework for WPF/XAML</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/3rikF/wpf-localization</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/3rikF/wpf-localization</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>wpf;localization;xaml;i18n</PackageTags>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <!-- Include language files as embedded resources -->

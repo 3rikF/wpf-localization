@@ -248,7 +248,7 @@ public sealed class LocalizationControllerTests
 			, out var mockWindow
 			, out var mockCore);
 
-		const string RESOURCE_PATH		= @"TestResources\TestTranslations.de-DE.csv";
+		const string RESOURCE_PATH		= @"TestResources/TestTranslations.de-DE.csv";
 
 		//--- ACT -------------------------------------------------------------
 		uut.AddTranslationsFromCsvResource(RESOURCE_PATH);

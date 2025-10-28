@@ -21,23 +21,23 @@ public sealed class RessourceCsvReader : ILocalizationReader
 	#region Fields
 
 	private readonly string _resourcePath;
-    private readonly Assembly? _assembly;
+	private readonly Assembly? _assembly;
 
-    #endregion Fields
+	#endregion Fields
 
-    //-----------------------------------------------------------------------------------------------------------------
-    #region Constructor
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Constructor
 
-    /// <summary>
-    /// Creates a new RessourceCsvReader with the specified resource path prefix and supported cultures
-    /// </summary>
-    /// <param name="resourcePathPrefix">The path prefix to locate resources (e.g., "/Languages/")</param>
-    /// <param name="supportedCultureNames">Array of culture names that should be loaded (e.g., ["de-DE", "en-US", "ru-RU"])</param>
-    public RessourceCsvReader(string resourcePath, Assembly? assembly=null)
+	/// <summary>
+	/// Creates a new RessourceCsvReader with the specified resource path prefix and supported cultures
+	/// </summary>
+	/// <param name="resourcePathPrefix">The path prefix to locate resources (e.g., "/Languages/")</param>
+	/// <param name="supportedCultureNames">Array of culture names that should be loaded (e.g., ["de-DE", "en-US", "ru-RU"])</param>
+	public RessourceCsvReader(string resourcePath, Assembly? assembly=null)
 	{
 		_resourcePath	= resourcePath;
-        _assembly		= assembly;
-    }
+		_assembly		= assembly;
+	}
 
 	#endregion Constructor
 
