@@ -53,6 +53,10 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
+    # Restore the application
+    - name: Restore the application
+      run: dotnet restore $env:SOLUTION_NAME
+
     # Build the solution
     - name: Build solution
       run: dotnet build $env:SOLUTION_NAME --configuration $env:Configuration --no-restore
@@ -75,11 +79,6 @@ jobs:
         flags: unittests
     #   name: codecov-umbrella
 
-    # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Restore the application
-      run: msbuild $env:SOLUTION_NAME /t:Restore /p:Configuration=$env:Configuration
-      env:
-        Configuration: ${{ matrix.CONFIGURATION }}
 
   #----------------------------------------------------------------------------------------------------------------------------------------
   publish:
