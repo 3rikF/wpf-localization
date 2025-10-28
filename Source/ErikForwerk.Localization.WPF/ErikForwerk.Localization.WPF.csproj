@@ -9,9 +9,9 @@
     <!-- NuGet Package Properties -->
     <PackageId>ErikForwerk.Localization.WPF</PackageId>
     <Authors>Erik Forwerk</Authors>
-    <Company>ErikForwerk</Company>
+    <Company>Erik Forwerk</Company>
     <Description>A small localization framework for WPF/XAML</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/3rikF/wpf-localization</PackageProjectUrl>
     <RepositoryUrl>https://github.com/3rikF/wpf-localization</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
