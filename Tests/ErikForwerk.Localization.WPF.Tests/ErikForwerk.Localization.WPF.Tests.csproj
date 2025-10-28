@@ -29,11 +29,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="TestResources\EmptyFile.de-DE.csv" />
-    <Resource Include="TestResources\TestResource.txt" />
-    <Resource Include="TestResources\TestTranslations.de-DE.csv" />
-    <Resource Include="TestResources\TestTranslations.en-US.csv" />
-    <Resource Include="TestResources\InvalidNoCulture.csv" />
+    <Resource Include="TestResources\EmptyFile.de-DE.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="TestResources\TestResource.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="TestResources\TestTranslations.de-DE.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="TestResources\TestTranslations.en-US.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="TestResources\InvalidNoCulture.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>
