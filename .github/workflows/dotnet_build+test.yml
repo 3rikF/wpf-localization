@@ -89,7 +89,7 @@ jobs:
 
     permissions:
       contents: write  # Required to create and push tags
-  #    packages: write  # Required for publishing packages
+      packages: write  # Required for publishing packages
 
     env:
       SOLUTION_NAME: "./WpfLocalizationTest.slnx"
