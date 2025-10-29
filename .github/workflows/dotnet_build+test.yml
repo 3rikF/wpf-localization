@@ -195,7 +195,7 @@ jobs:
 
     # Pack the NuGet package
     - name: Pack NuGet package
-      run: dotnet pack $env:PROJECT_PATH --configuration Release --no-build /p:PackageVersion=${{ steps.version.outputs.version }} --output ./nupkg
+      run: dotnet pack $env:PROJECT_PATH --configuration Release /p:PackageVersion=${{ steps.version.outputs.version }} --output ./nupkg
 
     # Publish to NuGet.org
     - name: Publish to NuGet
