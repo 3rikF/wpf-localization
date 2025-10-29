@@ -9,7 +9,7 @@
     <!-- NuGet Package Properties -->
     <PackageId>ErikForwerk.Localization.WPF</PackageId>
     <Authors>Erik Forwerk</Authors>
-    <Company>Erik Forwerk</Company>
+    <Company>-</Company>
     <Description>A small localization framework for WPF/XAML</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/3rikF/wpf-localization</PackageProjectUrl>
@@ -17,7 +17,17 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>wpf;localization;xaml;i18n</PackageTags>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Title>WPF Localization</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>Copyright © 2025 Erik Forwerk</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <!-- Include language files as embedded resources -->
 
