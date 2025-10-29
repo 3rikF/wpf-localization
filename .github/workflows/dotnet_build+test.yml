@@ -174,8 +174,10 @@ jobs:
         $newVersion = "$major.$minor.$patch"
         $newTag = "v$newVersion"
 
-        Write-Host "Previous version: $latestTag"
-        Write-Host "New version: $newTag"
+        #Write-Host "Previous version: $latestTag"
+        #Write-Host "New version: $newTag"
+        echo "Previous version: $latestTag"
+        echo "New version: $newTag"
 
         # Set output
         echo "version=$newVersion" >> $env:GITHUB_OUTPUT
