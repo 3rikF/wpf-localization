@@ -178,7 +178,7 @@ jobs:
     - name: Build solution
       shell: bash
       # Umgebungsvariablen in Bash: $PROJECT_PATH (ohne env:)
-      run: dotnet build $PROJECT_PATH --configuration Release /p:Version=${{ steps.version.outputs.version }}
+      run: dotnet build $PROJECT_PATH --configuration Release /p:Version=${{ steps.version.outputs.version }} /p:EnableWindowsTargeting=true
 
     # Pack the NuGet package
     - name: Pack NuGet package
@@ -187,7 +187,7 @@ jobs:
       run: |
         PACKAGE_VERSION="${{ steps.version.outputs.version }}"
         # Der dotnet pack Befehl
-        dotnet pack $PROJECT_PATH --configuration Release /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg
+        dotnet pack $PROJECT_PATH --configuration Release --no-build /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg
 
         # Den exakten Paketnamen für den push-Schritt ermitteln und speichern (Fail-Safe)
         PACKAGE_NAME=$(basename $PROJECT_PATH .csproj | sed 's/\.csproj$//')
