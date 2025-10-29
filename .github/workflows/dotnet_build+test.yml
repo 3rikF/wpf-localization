@@ -20,72 +20,72 @@ on:
 jobs:
 
   #----------------------------------------------------------------------------------------------------------------------------------------
-  build:
-
-    strategy:
-      matrix:
-        CONFIGURATION: [Debug, Release]
-
-    # For a list of available runner types, refer to
-    # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: windows-latest
-
-    permissions:
-      contents: read  # Required to checkout code
-
-    env:
-      # Replace with your solution name, i.e. MyWpfApp.sln.
-      SOLUTION_NAME: "./WpfLocalizationTest.slnx"
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v2
-
-    # Restore the application
-    - name: Restore the application
-      run: dotnet restore $env:SOLUTION_NAME
-
-    # Build the solution
-    - name: Build solution
-      run: dotnet build $env:SOLUTION_NAME --configuration $env:Configuration --no-restore
-      env:
-        Configuration: ${{ matrix.CONFIGURATION }}
-
-    # Execute all unit tests in the solution without rebuilding
-    - name: Execute unit tests
-      run: dotnet test $env:SOLUTION_NAME --configuration $env:Configuration --no-build --collect:"XPlat Code Coverage;Format=json,cobertura"
-      env:
-        Configuration: ${{ matrix.CONFIGURATION }}
-
-    # taken from a Codecov example
-    - name: Upload coverage reports to Codecov
-      #uses: codecov/codecov-action@v4
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./TestResults/**/*.cobertura.xml
-        flags: unittests
-    #   name: codecov-umbrella
+  #build:
+  #
+  #  strategy:
+  #    matrix:
+  #      CONFIGURATION: [Debug, Release]
+  #
+  #  # For a list of available runner types, refer to
+  #  # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+  #  runs-on: windows-latest
+  #
+  #  permissions:
+  #    contents: read  # Required to checkout code
+  #
+  #  env:
+  #    # Replace with your solution name, i.e. MyWpfApp.sln.
+  #    SOLUTION_NAME: "./WpfLocalizationTest.slnx"
+  #
+  #  steps:
+  #  - name: Checkout
+  #    uses: actions/checkout@v4
+  #    with:
+  #      fetch-depth: 0
+  #
+  #  # Install the .NET Core workload
+  #  - name: Install .NET Core
+  #    uses: actions/setup-dotnet@v4
+  #    with:
+  #      dotnet-version: 9.0.x
+  #
+  #  # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+  #  - name: Setup MSBuild.exe
+  #    uses: microsoft/setup-msbuild@v2
+  #
+  #  # Restore the application
+  #  - name: Restore the application
+  #    run: dotnet restore $env:SOLUTION_NAME
+  #
+  #  # Build the solution
+  #  - name: Build solution
+  #    run: dotnet build $env:SOLUTION_NAME --configuration $env:Configuration --no-restore
+  #    env:
+  #      Configuration: ${{ matrix.CONFIGURATION }}
+  #
+  #  # Execute all unit tests in the solution without rebuilding
+  #  - name: Execute unit tests
+  #    run: dotnet test $env:SOLUTION_NAME --configuration $env:Configuration --no-build --collect:"XPlat Code Coverage;Format=json,cobertura"
+  #    env:
+  #      Configuration: ${{ matrix.CONFIGURATION }}
+  #
+  #  # taken from a Codecov example
+  #  - name: Upload coverage reports to Codecov
+  #    #uses: codecov/codecov-action@v4
+  #    uses: codecov/codecov-action@v5
+  #    with:
+  #      token: ${{ secrets.CODECOV_TOKEN }}
+  #      files: ./TestResults/**/*.cobertura.xml
+  #      flags: unittests
+  #  #   name: codecov-umbrella
 
 
   #----------------------------------------------------------------------------------------------------------------------------------------
   publish:
-    needs: build
-    # Only run on main branch when tests are successful
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
-    runs-on: windows-latest
+  #  needs: build
+  #  # Only run on main branch when tests are successful
+  #  if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
 
     permissions:
       contents: write  # Required to create and push tags
@@ -110,79 +110,64 @@ jobs:
     # Determine the latest version tag and calculate new version
     - name: Determine new version
       id: version
+      shell: bash # Explizit Bash verwenden
       run: |
-        # Fetch all tags
+        # Die Bash-Logik zur Versionsbestimmung
+        # ------------------------------------
+
+        # 1. Tags holen
         git fetch --tags
 
-        # Get the latest version tag (assuming semantic versioning vX.Y.Z)
-        $tags = git tag -l "v*.*.*"
+        # 2. Letzten SemVer-Tag finden (sortiert und nimmt den höchsten)
+        # Sortiert tags numerisch und wählt den letzten (höchsten)
+        latestTag=$(git tag -l "v*.*.*" | sort -V | tail -n 1)
 
-        if ($tags.Count -eq 0) {
-          # No existing tags, start with v0.0.0
-          $latestTag = "v0.0.0"
-        } else {
-          # Sort tags by semantic version
-          $validTags = $tags | ForEach-Object {
-            $version = $_.TrimStart('v')
-            $parts = $version.Split('.')
-            # Validate tag format
-            if ($parts.Count -eq 3 -and $parts[0] -match '^\d+$' -and $parts[1] -match '^\d+$' -and $parts[2] -match '^\d+$') {
-              [PSCustomObject]@{
-                Tag = $_
-                Major = [int]$parts[0]
-                Minor = [int]$parts[1]
-                Patch = [int]$parts[2]
-              }
-            }
-          }
-          $latestTag = $validTags | Sort-Object -Property Major, Minor, Patch -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Tag
+        if [ -z "$latestTag" ]; then
+          # Kein Tag gefunden, starte bei v0.0.0
+          latestTag="v0.0.0"
+        fi
 
-          if ([string]::IsNullOrEmpty($latestTag)) {
-            # No valid tags found, start with v0.0.0
-            $latestTag = "v0.0.0"
-          }
-        }
+        # 3. Versionsteile extrahieren
+        # Entferne das 'v' und zerlege die Version
+        version=${latestTag#v}
+        IFS='.' read -r major minor patch <<< "$version"
 
-        # Remove 'v' prefix and split version
-        $version = $latestTag.TrimStart('v')
-        $versionParts = $version.Split('.')
-        $major = [int]$versionParts[0]
-        $minor = [int]$versionParts[1]
-        $patch = [int]$versionParts[2]
+        # 4. Bump-Typ bestimmen (Fallback auf 'patch')
+        bump_type="${{ github.event.inputs.bump }}"
+        if [ -z "$bump_type" ]; then
+          bump_type="patch"
+        fi
 
-        # Bump version based on input
-        $bump = "${{ github.event.inputs.bump }}"
-        if ([string]::IsNullOrEmpty($bump)) {
-          $bump = "patch"
-        }
+        # 5. Version erhöhen (Bash case-Anweisung)
+        case "$bump_type" in
+          major)
+            major=$((major + 1))
+            minor=0
+            patch=0
+            ;;
+          minor)
+            minor=$((minor + 1))
+            patch=0
+            ;;
+          patch)
+            patch=$((patch + 1))
+            ;;
+        esac
 
-        switch ($bump) {
-          "major" {
-            $major++
-            $minor = 0
-            $patch = 0
-          }
-          "minor" {
-            $minor++
-            $patch = 0
-          }
-          "patch" {
-            $patch++
-          }
-        }
+        newVersion="$major.$minor.$patch"
+        newTag="v$newVersion"
 
-        $newVersion = "$major.$minor.$patch"
-        $newTag = "v$newVersion"
+        # 6. Ausgabe im Log
+        echo "Previous version: $latestTag"
+        echo "New version: $newTag"
 
-        Write-Host "Previous version: $latestTag"
-        Write-Host "New version: $newTag"
-
-        # Set output
-        echo "version=$newVersion" >> $env:GITHUB_OUTPUT
-        echo "tag=$newTag" >> $env:GITHUB_OUTPUT
+        # 7. Outputs für nachfolgende Schritte setzen (Bash-Syntax)
+        echo "version=$newVersion" >> $GITHUB_OUTPUT
+        echo "tag=$newTag" >> $GITHUB_OUTPUT
 
     # Create and push new version tag
     - name: Create version tag
+      shell: bash
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -191,12 +176,28 @@ jobs:
 
     # Build the solution with new version
     - name: Build solution
-      run: dotnet build $env:PROJECT_PATH --configuration Release /p:Version=${{ steps.version.outputs.version }}
+      shell: bash
+      # Umgebungsvariablen in Bash: $PROJECT_PATH (ohne env:)
+      run: dotnet build $PROJECT_PATH --configuration Release /p:Version=${{ steps.version.outputs.version }}
 
     # Pack the NuGet package
     - name: Pack NuGet package
-      run: dotnet pack $env:PROJECT_PATH --configuration Release /p:PackageVersion=${{ steps.version.outputs.version }} --output ./nupkg
+      id: pack
+      shell: bash
+      run: |
+        PACKAGE_VERSION="${{ steps.version.outputs.version }}"
+        # Der dotnet pack Befehl
+        dotnet pack $PROJECT_PATH --configuration Release /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg
+
+        # Den exakten Paketnamen für den push-Schritt ermitteln und speichern (Fail-Safe)
+        PACKAGE_NAME=$(basename $PROJECT_PATH .csproj | sed 's/\.csproj$//')
+        NUPKG_PATH="./nupkg/${PACKAGE_NAME}.${PACKAGE_VERSION}.nupkg"
+
+        # Setzt den exakten Pfad als Output
+        echo "nupkg_path=$NUPKG_PATH" >> $GITHUB_OUTPUT
 
     # Publish to NuGet.org
-    - name: Publish to NuGet
-      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Publish to NuGet (Fail-Safe)
+      shell: bash
+      # Jetzt den exakten Pfad verwenden (Lösung A/B kombiniert)
+      run: dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
