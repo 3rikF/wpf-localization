@@ -187,7 +187,7 @@ jobs:
       run: |
         PACKAGE_VERSION="${{ steps.version.outputs.version }}"
         # Der dotnet pack Befehl
-        dotnet pack $PROJECT_PATH --configuration Release --no-build /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg
+        dotnet pack $PROJECT_PATH --configuration Release --no-build /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg /p:EnableWindowsTargeting=true
 
         # Den exakten Paketnamen für den push-Schritt ermitteln und speichern (Fail-Safe)
         PACKAGE_NAME=$(basename $PROJECT_PATH .csproj | sed 's/\.csproj$//')
