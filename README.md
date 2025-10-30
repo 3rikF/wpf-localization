@@ -92,18 +92,14 @@ Add the XML namespace to your XAML file:
 xmlns:loc="clr-namespace:ErikForwerk.Localization.WPF;assembly=ErikForwerk.Localization.WPF"
 ```
 
-Bind the window's language to the selected culture:
-
-```xaml
-<Window Language="{Binding SelectedCulture}">
-```
+The language of the window will be set when initializing the `LocalizationController` instance and when changing the `CurrentCulture``on that instance using the `Window` reference, that was handed in the constructor.
 
 #### Static Translation
 
 Use a static translation key directly:
 
 ```xaml
-<TextBlock Text="{loc:Localization OtherTextKey}" />
+<TextBlock Text="{loc:Localization StaticTextKey}" />
 ```
 
 #### Dynamic Translation with Binding
@@ -111,23 +107,23 @@ Use a static translation key directly:
 Bind the translation key dynamically:
 
 ```xaml
-<TextBlock Text="{loc:Localization {Binding SampleLangKey}}" />
+<TextBlock Text="{loc:Localization {Binding DynamicLangKey}}" />
 ```
 
 In your ViewModel:
 
 ```csharp
-private string _sampleLangKey = "BindingLanguageKey";
+private string _dynamicLangKey = "BindingLanguageKey";
 
-public string SampleLangKey
+public string DynamicLangKey
 {
-    get => _sampleLangKey;
+    get => _dynamicLangKey;
     set
     {
-        if (value == _sampleLangKey)
+        if (value == _dynamicLangKey)
             return;
         
-        _sampleLangKey = value;
+        _dynamicLangKey = value;
         RaisePropertyChanged();
     }
 }
@@ -135,13 +131,17 @@ public string SampleLangKey
 
 #### Translation with Placeholders
 
-Use placeholders in your translations that get replaced at runtime:
+Use the placeholders synthax in your translations to replacedifferent parts at runtime:
 
 ```xaml
-<TextBlock Text="{loc:Localization 'Foobar: %PartA% + %PartB% + %Missing%', ParsePlaceholders=True}" />
+<TextBlock Text="{loc:Localization 'Foobar: %PartA% + %PartB%', ParsePlaceholders=True}" />
 ```
 
-The placeholders (`%PartA%`, `%PartB%`) will be replaced with their corresponding translations from the CSV file.
+You can have non-translated text in combination with the placeholders, but only language-keys within %..% will be replaced.
+In the above example, the placeholders (`PartA`, `PartB`) will be replaced with their corresponding translations from the CSV file.
+You can also use binding in combination with placeholders.\
+To use % as part of the language key withing the placeholder-syntax, you need the escape the `%` using `\%` in the placeholder, for example  `%Value\%Offset%`.
+
 
 #### Language Selector
 
@@ -149,9 +149,9 @@ Create a ComboBox to let users switch languages:
 
 ```xaml
 <ComboBox
-    DisplayMemberPath="DisplayName"
-    ItemsSource="{Binding SupportedCultures}"
-    SelectedItem="{Binding SelectedCulture}" />
+    DisplayMemberPath	="DisplayName"
+    ItemsSource			="{Binding SupportedCultures}"
+    SelectedItem		="{Binding SelectedCulture}" />
 ```
 
 ### 4. Handling Missing Translations
