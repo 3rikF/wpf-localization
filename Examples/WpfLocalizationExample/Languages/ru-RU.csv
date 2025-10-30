@@ -5,3 +5,9 @@ AnotherBindingLanguageKey;Другой ключ языка привязки
 Button:ChangeText;Изменить текст
 PartA;Часть A
 PartB;Часть B
+
+Tab_1;Вкладка 1
+//Tab_2;Вкладка 2
+
+Content_1;Содержимое для вкладки 1\r\nÄÜÖßäöüß
+//Content_2;Содержимое для вкладки 2

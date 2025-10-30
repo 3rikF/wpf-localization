@@ -9,6 +9,8 @@ using System.Windows.Input;
 using ErikForwerk.Localization.WPF.Models;
 using ErikForwerk.Localization.WPF.Tools;
 
+using WpfLocalizationExample.ViewModels;
+
 namespace WpfLocalizationTest.ViewModels;
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged
@@ -16,7 +18,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
-	private LocalizationController _localization = new(System.Windows.Application.Current.MainWindow);
+	private LocalizationController _localization = new ();
 
 	#endregion Fields
 
@@ -43,7 +45,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 		=> _cmdChangeBoundLangKey ??= new RelayCommand(
 			a => SampleLangKey = SampleLangKey == "BindingLanguageKey"
 				? "AnotherBindingLanguageKey"
-				: "BindingLanguageKey"
+				: (SampleLangKey == "AnotherBindingLanguageKey"
+					? "MissingBindingKeyExample"
+					: "BindingLanguageKey")
 			, c => true);
 
 	#endregion Commands
@@ -88,6 +92,25 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
 	public void RaisePropertyChanged([CallerMemberName] string propertyName = "")
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+	protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+	{
+		if (!Equals(field, newValue))
+		{
+			field = newValue;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			return true;
+		}
+
+		return false;
+	}
+
+
+	public IEnumerable<ExampleTabItemViewModel> ExampleTabItems
+		{ get; } = [
+			new ExampleTabItemViewModel("Tab_1",	"Content_1")
+			, new ExampleTabItemViewModel("Tab_2",	"Content_2")
+		];
 
 	#endregion INotifyPropertyChanged
 }

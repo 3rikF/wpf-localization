@@ -1,7 +1,13 @@
-// English language translations (en-US)
+﻿// English language translations (en-US)
 OtherTextKey;Other Text
 BindingLanguageKey;Binding Language Key
 AnotherBindingLanguageKey;Another Binding Language Key
 Button:ChangeText;Change Text
 PartA;Part A
 PartB;Part B
+
+Tab_1;Tab 1
+//Tab_2;Tab 2
+
+Content_1;Content for Tab 1\r\nÄÜÖßäöüß
+//Content_2;Content for Tab 2
