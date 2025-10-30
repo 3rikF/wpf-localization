@@ -5,3 +5,9 @@ AnotherBindingLanguageKey;別のバインディング言語キー
 Button:ChangeText;テキストを変更
 PartA;パートA
 PartB;パートB
+
+Tab_1;タブ1
+//Tab_2;タブ2
+
+Content_1;タブ1のコンテンツ\r\nÄÜÖßäöüß
+//Content_2;タブ2のコンテンツ

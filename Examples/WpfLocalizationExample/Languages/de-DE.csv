@@ -5,3 +5,9 @@ AnotherBindingLanguageKey;Ein anderer Bindungssprachschlüssel
 Button:ChangeText;Text ändern
 PartA;Teil A
 PartB;Teil B
+
+Tab_1;Registerkarte 1
+//Tab_2;Registerkarte 2
+
+Content_1;Inhalt für Registerkarte 1\r\nÄÜÖßäöüß
+//Content_2;Inhalt für Registerkarte 2

@@ -3,8 +3,9 @@
 	xmlns			="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x			="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:local		="clr-namespace:WpfLocalizationTest"
-	xmlns:loc		="clr-namespace:ErikForwerk.Localization.WPF;assembly=ErikForwerk.Localization.WPF"
+	xmlns:loc		="clr-namespace:ErikForwerk.Localization.WPF.Xaml;assembly=ErikForwerk.Localization.WPF"
 	xmlns:vm		="clr-namespace:WpfLocalizationTest.ViewModels"
+	xmlns:sys		="clr-namespace:System;assembly=netstandard"
 
 	xmlns:mc		="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:d			="http://schemas.microsoft.com/expression/blend/2008"
@@ -14,77 +15,177 @@
 	SizeToContent	="Height"
 	ResizeMode		="NoResize"
 
-	Width			="350"
-	MinWidth		="150"
-	MaxWidth		="450"
-	Language		="{Binding SelectedCulture}"
+	Width			="535"
+
+	loc:LocalizationBehavior.SyncLanguage="True"
 	>
+	<!--Language		="{loc:LanguageBinding }"-->
+	<!--Language		="{Binding SelectedCulture}"-->
 
-	<StackPanel
-		Margin ="0, 0, 10, 10"
-		>
+	<Window.Resources>
+		<sys:Double x:Key="ExampleFloatingPointNumber">3.1452</sys:Double>
+		<sys:Int32 x:Key="ExampleInteger">123456789</sys:Int32>
+		<sys:DateTime x:Key="ExampleDateTimeValue">2023-12-31T18:30:00</sys:DateTime>
+	</Window.Resources>
 
-		<ComboBox
-			x:Name				="cmbLanguage"
-			Margin				="10, 10, 0, 0"
-			HorizontalAlignment	="Stretch"
-			DisplayMemberPath	="DisplayName"
+	<DockPanel>
 
-			ItemsSource			="{Binding SupportedCultures}"
-			SelectedItem		="{Binding SelectedCulture}"
+		<!-- ==== Example of localized items ====================================================================== -->
+		<StackPanel
+			Margin	="0, 0, 10, 10"
+			Width	="250"
+			>
+
+			<!-- ==== Language selection ComboBox ============================================= -->
+			<ComboBox
+				x:Name				="cmbLanguage"
+				Margin				="10, 10, 0, 0"
+				HorizontalAlignment	="Stretch"
+				DisplayMemberPath	="DisplayName"
+
+				ItemsSource			="{Binding SupportedCultures}"
+				SelectedItem		="{Binding SelectedCulture}"
+				/>
+
+
+			<!-- ==== Example of static translation =========================================== -->
+			<TextBlock
+				Margin		="10, 10, 0, 0"
+				Text		="Static Translation:"
+				FontWeight	="Bold"
 			/>
 
-
-		<TextBlock
-			Margin		="10, 10, 0, 0"
-			Text		="Static Translation"
-			FontWeight	="Bold"
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization OtherTextKey}"
 			/>
 
-		<TextBlock
-			Margin		="10, 0, 0, 0"
-			Text		="{loc:Localization OtherTextKey}"
+			<!-- ==== Example of static translation =========================================== -->
+			<TextBlock
+				Margin		="10, 10, 0, 0"
+				Text		="Implicit Localizations:"
+				FontWeight	="Bold"
 			/>
 
-		<TextBlock
-			Margin		="10, 10, 0, 0"
-			Text		="Bound Translation"
-			FontWeight	="Bold"
+			<ContentPresenter
+				Margin		="10, 0, 0, 0"
+				Content		="{DynamicResource ExampleFloatingPointNumber}"
+				/>
+
+			<ContentPresenter
+				Margin		="10, 0, 0, 0"
+				Content		="{StaticResource ExampleInteger}"/>
+
+			<ContentPresenter
+				Margin				="10, 0, 0, 0"
+				Content				="{StaticResource ExampleDateTimeValue}"
+				ContentStringFormat	="h"
+				/>
+
+			<ContentPresenter
+				Margin				="10, 0, 0, 0"
+				Content				="{StaticResource ExampleDateTimeValue}"
+				ContentStringFormat	="dddd, MMMM"
+				/>
+
+			<!-- ==== Example of translation with place-holders =============================== -->
+			<TextBlock
+				Margin		="10, 10, 0, 0"
+				Text		="Translation containing place-holder"
+				FontWeight	="Bold"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization 'Foobar: %PartA% + %PartB% + %MissingPlaceholderKeyExample%', ParsePlaceholders=True}"
+				TextWrapping="WrapWithOverflow"
 			/>
 
-		<TextBlock
-			Margin		="10, 0, 0, 0"
-			Text		="{loc:Localization {Binding SampleLangKey}}"
+			<!-- ==== Example of bound translation ============================================ -->
+			<TextBlock
+				Margin		="10, 10, 0, 0"
+				Text		="Bound Translation:"
+				FontWeight	="Bold"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleLangKey}}"
+				/>
+
+			<!-- ==== Example of missing translation  ========================================= -->
+			<TextBlock
+				Margin		="10, 10, 0, 0"
+				Text		="Missing Translations:"
+				FontWeight	="Bold"
 			/>
 
-		<TextBlock
-			Margin		="10, 10, 0, 0"
-			Text		="Translation containing place-holder"
-			FontWeight	="Bold"
-			/>
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization MissingStaticKeyExample}"
+				/>
 
-		<TextBlock
-			Margin		="10, 0, 0, 0"
-			Text		="{loc:Localization 'Foobar: %PartA% + %PartB% + %Missing%', ParsePlaceholders=True}"
-			/>
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding InvalidBindingExample}}"
+				/>
 
-		<TextBlock
-			Margin		="10, 10, 0, 0"
-			Text		="Missing Translation"
-			FontWeight	="Bold"
-			/>
+			<!-- ============================================================================== -->
+			<Button
+				Margin		="10, 10, 0, 0"
+				HorizontalAlignment="Stretch"
+				Content		="{loc:Localization Button:ChangeText}"
+				Command		="{Binding CmdChangeBoundLangKey}"
+				/>
 
-		<TextBlock
-			Margin		="10, 0, 0, 0"
-			Text		="{loc:Localization Blah:Foobar}"
-			/>
+		</StackPanel>
 
-		<Button
-			Margin		="10, 10, 0, 0"
-			HorizontalAlignment="Stretch"
-			Content		="{loc:Localization Button:ChangeText}"
-			Command		="{Binding CmdChangeBoundLangKey}"
-			/>
+		<!-- ==== Example of localized TabControl ================================================================= -->
+		<TabControl
+			DockPanel.Dock	="Right"
+			Margin			="0, 0, 10, 10"
+			ItemsSource		="{Binding ExampleTabItems}"
+			d:ItemsSource	="{d:SampleData ItemCount=5}"
+			SelectedIndex	="0"
+			>
 
-	</StackPanel>
+			<!-- ==== Header Control ====================================== -->
+			<TabControl.ItemTemplate>
+				<DataTemplate>
+
+					<StackPanel
+						Orientation="Horizontal">
+
+						<Ellipse
+							Width			="12"
+							Height			="12"
+							Margin			="0, 2, 5, 0"
+							Fill			="white"
+							Stroke			="Black"
+							VerticalAlignment="Center"/>
+
+						<TextBlock
+							Text				="{loc:Localization {Binding HeaderLangKey}}"
+							VerticalAlignment	="Center"/>
+
+					</StackPanel>
+				</DataTemplate>
+			</TabControl.ItemTemplate>
+
+			<TabControl.ContentTemplate>
+				<DataTemplate>
+					<Grid>
+
+						<TextBlock
+							Margin				="10"
+							Text				="{loc:Localization {Binding ContentLangKey}}"
+							VerticalAlignment	="Center"
+							HorizontalAlignment	="Center"
+							/>
+
+					</Grid>
+				</DataTemplate>
+			</TabControl.ContentTemplate>
+		</TabControl>
+	</DockPanel>
 </Window>
