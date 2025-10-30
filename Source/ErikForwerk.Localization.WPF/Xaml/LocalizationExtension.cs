@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -6,7 +7,7 @@ using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Models;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-namespace ErikForwerk.Localization.WPF;
+namespace ErikForwerk.Localization.WPF.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 public sealed class LocalizationExtension : MarkupExtension
@@ -113,6 +114,7 @@ public sealed class LocalizationExtension : MarkupExtension
 			MultiBinding multiBinding = new ()
 			{
 				Bindings				= { keyBinding, translationBinding}
+				, Mode					= BindingMode.OneWay
 				//--- des Pudels Kern ---
 				, Converter				= new LocalizationDynamicTextConverter()
 				, ConverterParameter	= new PlaceholderConverterParameter(keyBinding.Path?.Path, ParsePlaceholders)

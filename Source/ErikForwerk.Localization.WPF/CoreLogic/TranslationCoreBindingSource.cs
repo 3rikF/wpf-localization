@@ -58,6 +58,7 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 
 			_currentCulture = value;
 			Thread.CurrentThread.CurrentUICulture = value;
+			RaisePropertyChanged();
 			RaisePropertyChanged(nameof(LocalizedText));
 		}
 	}
