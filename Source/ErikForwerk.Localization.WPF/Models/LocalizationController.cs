@@ -1,10 +1,7 @@
 ﻿
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Markup;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
@@ -29,31 +26,8 @@ namespace ErikForwerk.Localization.WPF.Models;
 public sealed class LocalizationController : ILocalizationCore
 {
 	//-----------------------------------------------------------------------------------------------------------------
-	#region Nested Types
-
-	internal interface IWindow
-	{
-		XmlLanguage Language
-			{ get; set; }
-	}
-
-	// TODO: Use TestBase-class and from there, [RunInStaThread] to enable unit testing of this class.
-	[ExcludeFromCodeCoverage(Justification = "Can only be tested in an STA")]
-	private readonly record struct WindowWrapper(Window Window) : IWindow
-	{
-		public XmlLanguage Language
-		{
-			get => Window.Language;
-			set => Window.Language = value;
-		}
-	}
-
-	#endregion Nested Types
-
-	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
-	private readonly IWindow _window;
 	private readonly ILocalizationCore _localizationCore;
 
 	#endregion Fields
@@ -61,22 +35,17 @@ public sealed class LocalizationController : ILocalizationCore
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
 
-	private LocalizationController(IWindow targetWindow, ILocalizationCore localizationCore)
+	private LocalizationController(ILocalizationCore localizationCore)
 	{
-		_localizationCore	= localizationCore;
-		_window				= targetWindow;
-
-		UpdateWindowLanguage();
+		_localizationCore = localizationCore;
 	}
 
-	// TODO: Use TestBase-class and from there, [RunInStaThread] to enable unit testing of this constructor.
-	[ExcludeFromCodeCoverage(Justification = "Can only be tested in an STA")]
-	public LocalizationController(Window targetWindow)
-		: this(new WindowWrapper(targetWindow), TranslationCoreBindingSource.Instance)
+	public LocalizationController()
+		: this(TranslationCoreBindingSource.Instance)
 	{ }
 
-	internal static LocalizationController CreateUnitTestInstance(IWindow unitTestWindow, ILocalizationCore unitTestCore)
-		=> new(unitTestWindow, unitTestCore);
+	internal static LocalizationController CreateUnitTestInstance(ILocalizationCore unitTestCore)
+		=> new(unitTestCore);
 
 	#endregion Construction
 
@@ -86,31 +55,13 @@ public sealed class LocalizationController : ILocalizationCore
 	public CultureInfo CurrentCulture
 	{
 		get => _localizationCore.CurrentCulture;
-		set
-		{
-			if (value == _localizationCore.CurrentCulture)
-				return;
-
-			_localizationCore.CurrentCulture = value;
-			UpdateWindowLanguage();
-		}
+		set => _localizationCore.CurrentCulture = value;
 	}
 
 	public IEnumerable<CultureInfo> SupportedCultures
 		=> _localizationCore.SupportedCultures;
 
 	#endregion Properties
-
-	//-----------------------------------------------------------------------------------------------------------------
-	#region Private Methods
-
-	private void UpdateWindowLanguage()
-	{
-		if (_window is not null)
-			_window.Language = XmlLanguage.GetLanguage(CurrentCulture.IetfLanguageTag);
-	}
-
-	#endregion Private Methods
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Public Methods
