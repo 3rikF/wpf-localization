@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
-    
+
     <!-- NuGet Package Properties -->
     <PackageId>ErikForwerk.Localization.WPF</PackageId>
     <Authors>Erik Forwerk</Authors>
@@ -20,7 +20,19 @@
     <Title>WPF Localization</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Copyright>Copyright © 2025 Erik Forwerk</Copyright>
+    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
+
+  <PropertyGroup>
+      <DebugType>embedded</DebugType>
+      <IncludeSymbols>true</IncludeSymbols>
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md">
