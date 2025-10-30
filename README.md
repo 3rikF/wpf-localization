@@ -2,7 +2,7 @@
 
 A lightweight and easy-to-use localization framework for WPF/XAML applications that enables runtime language switching with minimal configuration.
 
-## Goal & Intention
+## Features
 
 This framework aims to simplify internationalization (i18n) in WPF applications by providing:
 
@@ -12,6 +12,9 @@ This framework aims to simplify internationalization (i18n) in WPF applications 
 - **Dynamic Binding Support**: Bind translation keys dynamically using data binding
 - **Placeholder Support**: Include dynamic content in translations using placeholders
 - **Resource Embedding**: Embed translation files as resources in your assembly
+- **Support for any CultureInfo**: Works with any culture supported by .NET
+- **Automatic Culture Detection**: Detects and uses appropriate cultures automatically
+- **Missing Translation Detection**: Clearly marks missing translations for easy identification
 
 ## Installation
 
@@ -172,18 +175,6 @@ For a complete working example, check out the [WpfLocalizationExample](./Example
 - Placeholder replacement
 - Runtime language switching with a ComboBox
 - Multiple language support (English, German, Russian, Japanese)
-
-## Features
-
-- ✅ Simple XAML markup extension
-- ✅ CSV-based translation files
-- ✅ Runtime language switching
-- ✅ Static and dynamic translation keys
-- ✅ Placeholder support for dynamic content
-- ✅ Embedded resource support
-- ✅ Support for any CultureInfo
-- ✅ Automatic culture detection
-- ✅ Missing translation detection
 
 ## Requirements
 
