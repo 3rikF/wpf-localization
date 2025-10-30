@@ -33,6 +33,8 @@ Install-Package ErikForwerk.Localization.WPF
 
 Create CSV files for each language you want to support. The format is simple: `Key;Translation`
 
+The resource name/filename must contain a culture name (e.g. "en-US", "de-DE", etc). The preferred format is `filename.de-DE.csv`.
+
 **Languages/en-US.csv:**
 ```csv
 // English language translations (en-US)
@@ -41,16 +43,6 @@ BindingLanguageKey;Binding Language Key
 Button:ChangeText;Change Text
 PartA;Part A
 PartB;Part B
-```
-
-**Languages/de-DE.csv:**
-```csv
-// German language translations (de-DE)
-OtherTextKey;Anderer Text
-BindingLanguageKey;Bindungssprachschlüssel
-Button:ChangeText;Text ändern
-PartA;Teil A
-PartB;Teil B
 ```
 
 ### 2. Initialize LocalizationController
@@ -164,11 +156,11 @@ Create a ComboBox to let users switch languages:
 
 ### 4. Handling Missing Translations
 
-If a translation key is not found, the framework will display the key itself, making it easy to identify missing translations:
+If a translation key is not found, the framework will display the key surrounded by exclamation marks, making it easy to identify missing translations:
 
 ```xaml
-<TextBlock Text="{loc:Localization Blah:Foobar}" />
-<!-- Will display "Blah:Foobar" if the key doesn't exist -->
+<TextBlock Text="{loc:Localization MissingLangKey}" />
+<!-- Will display "!!!MissingLangKey!!!" if the key doesn't exist -->
 ```
 
 ## Example Project
