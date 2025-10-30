@@ -29,7 +29,7 @@ internal sealed class LocalizationDynamicTextConverter : IMultiValueConverter
 	{
 		PlaceholderConverterParameter? converterParam = parameter as PlaceholderConverterParameter?;
 
-		if (_isInDesignMode(new DependencyObject()) && values.Length > 0 && values[0] == DependencyProperty.UnsetValue)
+		if (values.Length > 0 && values[0] == DependencyProperty.UnsetValue)
 			return (converterParam?.DesignTimeFallback ?? "UnknwownBindingPath").FormatAsNotTranslated();
 
 		else if (values.Length < 1 || values[0] is null)
