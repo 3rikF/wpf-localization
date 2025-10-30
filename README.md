@@ -58,12 +58,12 @@ PartB;Teil B
 In your ViewModel or code-behind, initialize the `LocalizationController` and load your translation files:
 
 ```csharp
+using System.Globalization;
 using ErikForwerk.Localization.WPF.Models;
-using ErikForwerk.Localization.WPF.Tools;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
-    private LocalizationController _localization = new(Application.Current.MainWindow);
+    private LocalizationController _localization = new(System.Windows.Application.Current.MainWindow);
 
     public MainWindowViewModel()
     {
