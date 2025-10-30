@@ -148,7 +148,7 @@ To use % as part of the language key withing the placeholder-syntax, you need th
 
 #### Language Selector
 
-Create a ComboBox to let users switch languages:
+Create a ComboBox to let users switch languages. The `SupportedCultures` and `SelectedCulture` properties should be exposed in your ViewModel using the `LocalizationController` instance (see step 2 above):
 
 ```xaml
 <ComboBox
@@ -156,6 +156,8 @@ Create a ComboBox to let users switch languages:
     ItemsSource			="{Binding SupportedCultures}"
     SelectedItem		="{Binding SelectedCulture}" />
 ```
+
+The bindings connect to properties in your ViewModel that wrap the `LocalizationController.SupportedCultures` and `LocalizationController.CurrentCulture` properties. See the [Example Project](#example-project) for a complete implementation.
 
 ### 4. Handling Missing Translations
 
