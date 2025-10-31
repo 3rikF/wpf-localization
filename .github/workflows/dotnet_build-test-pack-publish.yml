@@ -118,8 +118,8 @@ jobs:
         # 1. Tags holen
         git fetch --tags
 
-        # 2. Letzten SemVer-Tag finden (sortiert und nimmt den höchsten)
-        # Sortiert tags numerisch und wählt den letzten (höchsten)
+        # 2. Letzten SemVer-Tag finden (sortiert und nimmt den hÃ¶chsten)
+        # Sortiert tags numerisch und wÃ¤hlt den letzten (hÃ¶chsten)
         latestTag=$(git tag -l "v*.*.*" | sort -V | tail -n 1)
 
         if [ -z "$latestTag" ]; then
@@ -138,7 +138,7 @@ jobs:
           bump_type="patch"
         fi
 
-        # 5. Version erhöhen (Bash case-Anweisung)
+        # 5. Version erhÃ¶hen (Bash case-Anweisung)
         case "$bump_type" in
           major)
             major=$((major + 1))
@@ -161,7 +161,7 @@ jobs:
         echo "Previous version: $latestTag"
         echo "New version: $newTag"
 
-        # 7. Outputs für nachfolgende Schritte setzen (Bash-Syntax)
+        # 7. Outputs fÃ¼r nachfolgende Schritte setzen (Bash-Syntax)
         echo "version=$newVersion" >> $GITHUB_OUTPUT
         echo "tag=$newTag" >> $GITHUB_OUTPUT
 
@@ -189,7 +189,7 @@ jobs:
         # Der dotnet pack Befehl
         dotnet pack $PROJECT_PATH --configuration Release --no-build /p:PackageVersion=$PACKAGE_VERSION --output ./nupkg /p:EnableWindowsTargeting=true
 
-        # Den exakten Paketnamen für den push-Schritt ermitteln und speichern (Fail-Safe)
+        # Den exakten Paketnamen fÃ¼r den push-Schritt ermitteln und speichern (Fail-Safe)
         PACKAGE_NAME=$(basename $PROJECT_PATH .csproj | sed 's/\.csproj$//')
         NUPKG_PATH="./nupkg/${PACKAGE_NAME}.${PACKAGE_VERSION}.nupkg"
 
@@ -199,5 +199,5 @@ jobs:
     # Publish to NuGet.org
     - name: Publish to NuGet (Fail-Safe)
       shell: bash
-      # Jetzt den exakten Pfad verwenden (Lösung A/B kombiniert)
+      # Jetzt den exakten Pfad verwenden (LÃ¶sung A/B kombiniert)
       run: dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
