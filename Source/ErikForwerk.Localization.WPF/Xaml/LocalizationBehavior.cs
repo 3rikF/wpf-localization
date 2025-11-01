@@ -5,8 +5,10 @@ using System.Windows.Markup;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Xaml;
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
 /// <summary>
 /// Provides attached properties for automatic language synchronization with the localization system.
 /// </summary>

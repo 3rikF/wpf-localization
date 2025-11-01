@@ -1,4 +1,5 @@
-﻿using System.IO;																	// Stream, ...
+﻿
+using System.IO;																	// Stream, ...
 using System.Reflection;															// Assembly
 using System.Windows;																//Application
 
