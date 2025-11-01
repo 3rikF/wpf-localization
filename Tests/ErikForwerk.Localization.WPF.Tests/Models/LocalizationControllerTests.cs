@@ -11,7 +11,7 @@ using Moq;
 namespace ErikForwerk.Localization.WPF.Tests.Models;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection(nameof(TranslationCoreBindingSource))]
+[Collection($"{nameof(TranslationCoreBindingSource)}-{nameof(LocalizationController)}")]
 public sealed class LocalizationControllerTests: IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
