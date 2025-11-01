@@ -1,11 +1,13 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
+using ErikForwerk.TestAbstractions.Models;
 
 using Moq;
+
+using Xunit.Abstractions;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
@@ -21,12 +23,13 @@ public class TranslationCoreBindingSourceCollection
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("TranslationCoreBindingSource Collection")]
-public sealed class TranslationCoreBindingSourceTests : IDisposable
+public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
 
-	public TranslationCoreBindingSourceTests()
+	public TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper)
+		: base(testOutputHelper)
 	{
 		TranslationCoreBindingSource.Instance.Reset();
 	}
@@ -38,28 +41,6 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	}
 
 	#endregion Construction
-
-	//-----------------------------------------------------------------------------------------------------------------
-	#region Test Helper
-
-	private void FailTest(object? sender, PropertyChangedEventArgs args)
-		=> Assert.Fail($"Raised [PropertyChanged] on [{args.PropertyName}]. This code path should not be reached.");
-
-	#endregion Test Helper
-
-	//-----------------------------------------------------------------------------------------------------------------
-	#region Meta Tests
-
-	[Fact]
-	public void FailTests_ShouldFail()
-	{
-		//--- ARRANGE & ACT & ASSERT ---------------------------------------------------
-		_ = Assert.Throws<Xunit.Sdk.FailException>(
-			() => FailTest(null, new PropertyChangedEventArgs("Test")));
-	}
-
-
-	#endregion Meta Tests
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
@@ -121,7 +102,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	public void CurrentCulture_SetNewCulture_UpdatesThreadCurrentUICulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo newCulture					= new CultureInfo("fr-FR");
+		CultureInfo newCulture					= new("fr-FR");
 		TranslationCoreBindingSource instance	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
@@ -139,7 +120,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	public void CurrentCulture_SetSameCulture_DoesNotUpdate()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo ci					= new CultureInfo("fr-FR");
+		CultureInfo ci					= new("fr-FR");
 		TranslationCoreBindingSource uut= TranslationCoreBindingSource.Instance;
 
 		uut.CurrentCulture				= ci;
@@ -209,7 +190,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	public void AddTranslations_NewCulture_RaisesPropertyChangedForSupportedCultures()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new CultureInfo("de-DE");
+		CultureInfo testCulture					= new("de-DE");
 		Mock<ISingleCultureDictionary> mockDict	= new();
 		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
 
@@ -226,7 +207,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	public void AddTranslations_NewCulture_RaisesPropertyChangedForLocalizedText()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new CultureInfo("de-DE");
+		CultureInfo testCulture					= new("de-DE");
 		Mock<ISingleCultureDictionary> mockDict	= new();
 		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
 
@@ -243,7 +224,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	public void AddTranslations_KnownCulture_RaisesPropertyChangedForLocalizedText()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new CultureInfo("de-DE");
+		CultureInfo testCulture					= new("de-DE");
 		Mock<ISingleCultureDictionary> mockDict1= new();
 		_ = mockDict1.SetupGet(m => m.Culture).Returns(testCulture);
 		_ = mockDict1.Setup(m => m.AddOrUpdate(It.IsAny<ISingleCultureDictionary>()));
@@ -262,33 +243,93 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 			, () => uut.AddTranslations(mockDict2.Object));
 	}
 
-	[Fact]
-	public void AddTranslations_KnownCultureNotMatchingCurrentCulture_DoesNotRaisePropertyChanged()
+	/// <summary>
+	/// Tests that adding translations for a culture that is already known,
+	/// will not raise [PropertyChanged] for [SupportedCultures] because no new culture was added.
+	/// </summary>
+	[Theory]
+	[InlineData("de-DE", "de-DE", "de-DE", new string[] {"LocalizedText"})]
+	[InlineData("en-US", "en-US", "en-US", new string[] {"LocalizedText"})]
+	[InlineData("fr-FR", "fr-FR", "fr-FR", new string[] {"LocalizedText"})]
+	[InlineData("de-DE", "es-ES", "de-DE", new string[] {"LocalizedText", "SupportedCultures"})]
+	[InlineData("en-US", "es-ES", "en-US", new string[] {"LocalizedText", "SupportedCultures"})]
+	[InlineData("fr-FR", "es-ES", "fr-FR", new string[] {"LocalizedText", "SupportedCultures"})]
+
+	[InlineData("jp-JA", "de-DE", "de-DE", new string[] {})]
+	[InlineData("jp-JA", "en-US", "en-US", new string[] {})]
+	[InlineData("jp-JA", "fr-FR", "fr-FR", new string[] {})]
+
+	[InlineData("jp-JA", "es-ES", "de-DE", new string[] {"SupportedCultures"})]
+	[InlineData("jp-JA", "es-ES", "en-US", new string[] {"SupportedCultures"})]
+	[InlineData("jp-JA", "es-ES", "fr-FR", new string[] {"SupportedCultures"})]
+	public void AddTranslations_KnownCultureNotMatchingCurrentCulture_DoesNotRaisePropertyChanged(
+		string currentCultureName
+		, string firstDictCultureName
+		, string secondDictCultureName
+		, string[] expectedPropertyUpdates)
 	{
-		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new CultureInfo("de-DE");
-		CultureInfo otherCulture				= new CultureInfo("fr-FR");
+		//--- EXPLANATION -----------------------------------------------------
+		TestConsole.WriteLine($"CurrentCulture:     [{currentCultureName}]");
+		TestConsole.WriteLine($"FirstDictCulture:   [{firstDictCultureName}]");
+		TestConsole.WriteLine($"SecondDictCulture:  [{secondDictCultureName}]");
+		TestConsole.WriteLine("");
 
-		Mock<ISingleCultureDictionary> mockDict1= new();
-		_ = mockDict1.SetupGet(m => m.Culture).Returns(testCulture);
-		_ = mockDict1.Setup(m => m.AddOrUpdate(It.IsAny<ISingleCultureDictionary>()));
+		if (currentCultureName == secondDictCultureName)
+			TestConsole.WriteLine("[CurrentCulture == SecondDictCulture]	=> Localization updated required");
+		else
+			TestConsole.WriteLine("[CurrentCulture != SecondDictCulture]	=> Localization update NOT required");
 
-		Mock<ISingleCultureDictionary> mockDict2= new();
-		_ = mockDict2.SetupGet(m => m.Culture).Returns(testCulture);
+		if (firstDictCultureName == secondDictCultureName)
+			TestConsole.WriteLine("[FirstDictCulture == SecondDictCulture]	=> SupportedCultures update NOT required");
+		else
+			TestConsole.WriteLine("[FirstDictCulture != SecondDictCulture]	=> SupportedCultures updated required");
 
+		TestConsole.WriteLine("");
+
+		//--- ARRANGE ---------------------------------------------------------
+		HashSet<string?> actualPropertyUpdates	= [];
+		void logPropertyChange(object? s, PropertyChangedEventArgs a) => _ = actualPropertyUpdates.Add(a.PropertyName);
+
+		CultureInfo currentCulture			= CultureInfo.CreateSpecificCulture(currentCultureName);
+		CultureInfo firstCulture			= CultureInfo.CreateSpecificCulture(firstDictCultureName);
+		CultureInfo SecondCulture			= CultureInfo.CreateSpecificCulture(secondDictCultureName);
+
+		Mock<ISingleCultureDictionary> mockDict1 = new();
+		_ = mockDict1.SetupGet(m => m.Culture).Returns(firstCulture);
+
+		Mock<ISingleCultureDictionary> mockDict2 = new();
+		_ = mockDict2.SetupGet(m => m.Culture).Returns(SecondCulture);
+
+		//---
 		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
+		//--- add first dictionary, this will sett the first and only supported culture for now ---
 		uut.AddTranslations(mockDict1.Object);
-		uut.CurrentCulture						= otherCulture;
-		uut.PropertyChanged						+= FailTest;
 
-		//--- ACT -------------------------------------------------------
-		uut.AddTranslations(mockDict2.Object);
+		//--- set the current culture, necessary updates also depend on this ---
+		uut.CurrentCulture		= currentCulture;
 
-		//--- ASSERT -----------------------------------------------------
-		Assert.Contains(testCulture, uut.SupportedCultures);
+		//--- subscribe to property changed events to log what properties have been updated ---
+		uut.PropertyChanged		+= logPropertyChange;
 
-		//--- otherwise the clean-up would trigger the trap ---
-		uut.PropertyChanged -= FailTest;
+		//--- ACT -------------------------------------------------------------
+		try
+		{
+			//--- add second dictionary, this is where we expect (or not expect) property changed events ---
+			uut.AddTranslations(mockDict2.Object);
+		}
+		finally
+		{
+			//--- CLEANUP -----------------------------------------------------
+			uut.PropertyChanged		-= logPropertyChange;
+		}
+
+		TestConsole.WriteLine($"Expected property updates: [{string.Join("], [", expectedPropertyUpdates.Order())}]");
+		TestConsole.WriteLine($"Actual property updates:   [{string.Join("], [", actualPropertyUpdates.Order())}]");
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(
+			expectedPropertyUpdates.Order()
+			, actualPropertyUpdates.Order());
 	}
 
 	#endregion AddTranslations
@@ -414,7 +455,7 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 	}
 
 	[Fact]
-	public void Reset_RaisesPropertyChangedForLocalizedText()
+	public void Reset_RaisesPropertyChanges()
 	{
 		//--- ARRANGE ---------------------------------------------------
 		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
@@ -423,14 +464,24 @@ public sealed class TranslationCoreBindingSourceTests : IDisposable
 		Assert.PropertyChanged(
 			uut
 			, nameof(TranslationCoreBindingSource.LocalizedText)
-			, () => uut.Reset());
+			, uut.Reset);
+
+		Assert.PropertyChanged(
+			uut
+			, nameof(TranslationCoreBindingSource.CurrentCulture)
+			, uut.Reset);
+
+		Assert.PropertyChanged(
+			uut
+			, nameof(TranslationCoreBindingSource.SupportedCultures)
+			, uut.Reset);
 	}
 
 	[Fact]
 	public void Reset_ClearsDictionariesAndResetsCulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new CultureInfo("de-DE");
+		CultureInfo testCulture					= new("de-DE");
 		Mock<ISingleCultureDictionary> mockDict	= new();
 		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
 
