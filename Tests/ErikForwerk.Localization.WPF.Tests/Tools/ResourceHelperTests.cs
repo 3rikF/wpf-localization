@@ -125,7 +125,7 @@ public sealed class ResourceHelperTests
 		Assert.Contains(EXPECTED_LINE_1,	result);
 		Assert.Contains(EXPECTED_LINE_2,	result);
 		Assert.Contains(EXPECTED_LINE_3,	result);
-		_testConsole.WriteLine($"[✔️ Passed] All expected lines found in multiline content.");
+		_testConsole.WriteLine($"[✔️ Passed] All expected lines found in multi-line content.");
 		_testConsole.WriteLine($"Content:\n{result}");
 	}
 

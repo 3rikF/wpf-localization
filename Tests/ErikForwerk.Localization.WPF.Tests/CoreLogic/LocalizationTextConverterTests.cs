@@ -8,6 +8,7 @@ using ErikForwerk.Localization.WPF.Models;
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
+[Collection(nameof(TranslationCoreBindingSource))]
 public sealed class LocalizationTextConverterTests
 {
 	//-----------------------------------------------------------------------------------------------------------------
