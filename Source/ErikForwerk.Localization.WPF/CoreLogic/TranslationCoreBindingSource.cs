@@ -17,6 +17,7 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
+	private readonly CultureInfo _originalThreadCulture = Thread.CurrentThread.CurrentUICulture;
 	private CultureInfo _currentCulture = Thread.CurrentThread.CurrentUICulture;
 	private readonly Dictionary<CultureInfo, ISingleCultureDictionary> _dictionaries = [];
 
@@ -72,19 +73,17 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 
 		//--- Merge dictionaries if culture already exists ---
 		if (_dictionaries.TryGetValue(dictionary.Culture, out ISingleCultureDictionary? existingDictionary))
-		{
 			existingDictionary.AddOrUpdate(dictionary);
-
-			if (dictionary.Culture.Equals(_currentCulture))
-				RaisePropertyChanged(nameof(LocalizedText));
-		}
 
 		else
 		{
 			_dictionaries[dictionary.Culture] = dictionary;
-			RaisePropertyChanged(nameof(SupportedCultures));
-			RaisePropertyChanged(nameof(LocalizedText));
+			RaisePropertyChanged(nameof(SupportedCultures));	//--- a new culture has been added: update supported cultures ---
 		}
+
+		//--- translations have been added or changed: update all bindings ---
+		if (dictionary.Culture.Equals(_currentCulture))
+			RaisePropertyChanged(nameof(LocalizedText));
 	}
 
 	#endregion ILocalizationCore
@@ -108,44 +107,32 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 			return key.FormatAsNotTranslated();
 	}
 
-	private string ParseLocalizedText(ISingleCultureDictionary existingDictionary, string text/*, HashSet<string> visitedKeys*/)
+	private static string ParseLocalizedText(ISingleCultureDictionary existingDictionary, string text)
 	{
 		return MatchPlaceholderRegEx().Replace(text, match =>
 		{
 			string innerKey = match.Groups[1].Value;
-			//if (visitedKeys.Contains(innerKey))
-			//	return $"%{innerKey}%"; // Return as is to avoid cycle
-
-			//_ = visitedKeys.Add(innerKey);
 			return existingDictionary.GetTranslation(innerKey);
-			//string result = GetTranslationInternal(innerKey, visitedKeys);
-			//_ = visitedKeys.Remove(innerKey);
-			//return result;
 		});
 	}
 
-	//private string GetTranslationInternal(string key, HashSet<string> visitedKeys)
-	//{
-	//	if (string.IsNullOrEmpty(key))
-	//		return string.Empty;
-	//
-	//	else if (_dictionaries.TryGetValue(_currentCulture, out ISingleCultureDictionary? existingDictionary))
-	//	{
-	//		string translated = existingDictionary.GetTranslation(key);
-	//		return ParseLocalizedText(translated, visitedKeys);
-	//	}
-	//
-	//	else
-	//		return key.FormatAsNotTranslated();
-	//}
-
+	/// <summary>
+	/// Resets the localization state by clearing all dictionaries and updating the current culture to match the thread's UI culture.
+	/// Raises property change notifications for supported cultures and localized text.
+	/// </summary>
+	/// <remarks>Call this method to reinitialize localization data, typically after changing available cultures or
+	/// updating resource dictionaries. Property change notifications allow data-bound UI elements to refresh their
+	/// displayed values accordingly.</remarks>
 	internal void Reset()
 	{
 		_dictionaries.Clear();
-		_currentCulture = Thread.CurrentThread.CurrentUICulture;
-
 		RaisePropertyChanged(nameof(SupportedCultures));
+
+		_currentCulture							= _originalThreadCulture;
+		RaisePropertyChanged(nameof(CurrentCulture));
 		RaisePropertyChanged(nameof(LocalizedText));
+
+		Thread.CurrentThread.CurrentUICulture	= _originalThreadCulture;
 	}
 
 	#endregion Public Methods
