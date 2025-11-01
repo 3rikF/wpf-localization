@@ -4,6 +4,7 @@ using System.IO;
 
 using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.Localization.WPF.Reader;
+using ErikForwerk.TestAbstractions.Models;
 
 using Xunit.Abstractions;
 
@@ -11,12 +12,11 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.Reader;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-public sealed class FilesystemCsvReaderTests : IDisposable
+public sealed class FilesystemCsvReaderTests : TestBase, IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
-	private readonly ITestOutputHelper _testConsole;
 	private readonly string _testDirectory;
 
 	#endregion Fields
@@ -24,15 +24,14 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Constructor & Disposal
 
-	public FilesystemCsvReaderTests(ITestOutputHelper testConsole)
+	public FilesystemCsvReaderTests(ITestOutputHelper testOutputHelper)
+		:base(testOutputHelper)
 	{
-		_testConsole = testConsole;
-
 		//--- Create a temporary test directory ---
 		_testDirectory = Path.Combine(Path.GetTempPath(), $"LocalizationTests_{Guid.NewGuid()}");
 		_ = Directory.CreateDirectory(_testDirectory);
 
-		_testConsole.WriteLine($"Created test directory: [{_testDirectory}]");
+		TestConsole.WriteLine($"Created test directory: [{_testDirectory}]");
 	}
 
 	public void Dispose()
@@ -41,7 +40,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		if (Directory.Exists(_testDirectory))
 		{
 			Directory.Delete(_testDirectory, recursive: true);
-			_testConsole.WriteLine($"Cleaned up test directory: [{_testDirectory}]");
+			TestConsole.WriteLine($"Cleaned up test directory: [{_testDirectory}]");
 		}
 	}
 
@@ -61,7 +60,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		foreach (KeyValuePair<string, string> kvp in translations)
 			writer.WriteLine($"{kvp.Key};{kvp.Value}");
 
-		_testConsole.WriteLine($"Created test file: [{fileName}]");
+		TestConsole.WriteLine($"Created test file: [{fileName}]");
 		return fileName;
 	}
 
@@ -80,7 +79,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal("languagesFolder", ex.ParamName);
-		_testConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for null languages folder.");
+		TestConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for null languages folder.");
 	}
 
 	[Fact]
@@ -89,7 +88,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		//--- ARRANGE ---------------------------------------------------------
 		string nonExistentPath = Path.Combine(_testDirectory, "NonExistent");
 
-		_testConsole.WriteLine($"Testing with non-existent path: [{nonExistentPath}]");
+		TestConsole.WriteLine($"Testing with non-existent path: [{nonExistentPath}]");
 
 		//--- ACT -------------------------------------------------------------
 		DirectoryNotFoundException ex = Assert.Throws<DirectoryNotFoundException>(
@@ -98,21 +97,21 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Contains("Languages directory not found", ex.Message);
 		Assert.Contains(nonExistentPath, ex.Message);
-		_testConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for non-existent directory.");
+		TestConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for non-existent directory.");
 	}
 
 	[Fact]
 	public void Ctor_ValidDirectory_CreatesInstance()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		_testConsole.WriteLine($"Testing with valid directory: [{_testDirectory}]");
+		TestConsole.WriteLine($"Testing with valid directory: [{_testDirectory}]");
 
 		//--- ACT -------------------------------------------------------------
 		FilesystemCsvReader uut = new(_testDirectory);
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.NotNull(uut);
-		_testConsole.WriteLine($"[✔️ Passed] {nameof(FilesystemCsvReader)} instance created successfully.");
+		TestConsole.WriteLine($"[✔️ Passed] {nameof(FilesystemCsvReader)} instance created successfully.");
 	}
 
 	#endregion Constructor Tests
@@ -126,7 +125,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		//--- ARRANGE ---------------------------------------------------------
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine($"Testing with empty directory: [{_testDirectory}]");
+		TestConsole.WriteLine($"Testing with empty directory: [{_testDirectory}]");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result = uut.GetLocalizations();
@@ -135,14 +134,14 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		Assert.NotNull(result);
 		Assert.Empty(result);
 
-		_testConsole.WriteLine("[✔️ Passed] Empty array returned for directory with no CSV files.");
+		TestConsole.WriteLine("[✔️ Passed] Empty array returned for directory with no CSV files.");
 	}
 
 	[Fact]
 	public void GetLocalizations_SingleCsvFile_ReturnsSingleDictionary()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		_testConsole.WriteLine("Testing with single CSV file (de-DE)");
+		TestConsole.WriteLine("Testing with single CSV file (de-DE)");
 
 		Dictionary<string, string> translations = new()
 		{
@@ -160,7 +159,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		ISingleCultureDictionary dictionary = Assert.Single(result);
 		Assert.Equal(CultureInfo.GetCultureInfo("de-DE"), dictionary.Culture);
 
-		_testConsole.WriteLine("[✔️ Passed] Single dictionary returned with correct culture.");
+		TestConsole.WriteLine("[✔️ Passed] Single dictionary returned with correct culture.");
 	}
 
 	[Fact]
@@ -172,7 +171,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing with multiple CSV files (de-DE, en-US)");
+		TestConsole.WriteLine("Testing with multiple CSV files (de-DE, en-US)");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result = uut.GetLocalizations();
@@ -183,7 +182,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		Assert.Contains(result, d => d.Culture.Name == "de-DE");
 		Assert.Contains(result, d => d.Culture.Name == "en-US");
-		_testConsole.WriteLine("[✔️ Passed] Multiple dictionaries returned with correct cultures.");
+		TestConsole.WriteLine("[✔️ Passed] Multiple dictionaries returned with correct cultures.");
 	}
 
 	[Fact]
@@ -193,7 +192,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		string invalidFileName	= CreateTestCsvFile(null, new(){{ "TestKey1", "TestWert1" }});
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine($"Testing with CSV file without culture tag: [{invalidFileName}]");
+		TestConsole.WriteLine($"Testing with CSV file without culture tag: [{invalidFileName}]");
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
@@ -201,7 +200,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Contains("IETF-language-tag", ex.Message);
-		_testConsole.WriteLine("[✔️ Passed] InvalidOperationException thrown for file without culture tag.");
+		TestConsole.WriteLine("[✔️ Passed] InvalidOperationException thrown for file without culture tag.");
 	}
 
 	[Theory]
@@ -223,7 +222,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine($"Testing [{cultureName}]: Expected [{expectedKey}] => [{expectedValue}]");
+		TestConsole.WriteLine($"Testing [{cultureName}]: Expected [{expectedKey}] => [{expectedValue}]");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result			= uut.GetLocalizations();
@@ -232,7 +231,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(expectedValue, actualValue);
-		_testConsole.WriteLine("[✔️ Passed] Translation matches expected value.");
+		TestConsole.WriteLine("[✔️ Passed] Translation matches expected value.");
 	}
 
 	[Fact]
@@ -251,7 +250,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine($"Testing with {translations.Count} translations");
+		TestConsole.WriteLine($"Testing with {translations.Count} translations");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result		= uut.GetLocalizations();
@@ -267,7 +266,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 			Assert.Equal(kvp.Value, allTranslations[kvp.Key]);
 		}
 
-		_testConsole.WriteLine("[✔️ Passed] All translations loaded correctly.");
+		TestConsole.WriteLine("[✔️ Passed] All translations loaded correctly.");
 	}
 
 	[Fact]
@@ -285,7 +284,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing CSV file with escaped characters");
+		TestConsole.WriteLine("Testing CSV file with escaped characters");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result		= uut.GetLocalizations();
@@ -295,7 +294,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		Assert.Contains("\r\n",		dictionary.GetTranslation("TestKey1"));
 		Assert.Contains("\t",		dictionary.GetTranslation("TestKey2"));
 		Assert.Contains(";",		dictionary.GetTranslation("TestKey3"));
-		_testConsole.WriteLine("[✔️ Passed] Escaped characters parsed correctly.");
+		TestConsole.WriteLine("[✔️ Passed] Escaped characters parsed correctly.");
 	}
 
 	[Fact]
@@ -314,7 +313,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing CSV file with comments");
+		TestConsole.WriteLine("Testing CSV file with comments");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result		= uut.GetLocalizations();
@@ -325,7 +324,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		Assert.Equal(2, allTranslations.Count);
 		Assert.True(allTranslations.ContainsKey("TestKey1"));
 		Assert.True(allTranslations.ContainsKey("TestKey2"));
-		_testConsole.WriteLine("[✔️ Passed] Comments ignored, only valid entries loaded.");
+		TestConsole.WriteLine("[✔️ Passed] Comments ignored, only valid entries loaded.");
 	}
 
 	[Fact]
@@ -346,7 +345,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing CSV file with empty lines");
+		TestConsole.WriteLine("Testing CSV file with empty lines");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result		= uut.GetLocalizations();
@@ -355,7 +354,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(2, allTranslations.Count);
-		_testConsole.WriteLine("[✔️ Passed] Empty lines ignored, only valid entries loaded.");
+		TestConsole.WriteLine("[✔️ Passed] Empty lines ignored, only valid entries loaded.");
 	}
 
 	[Fact]
@@ -372,7 +371,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing multiple calls to GetLocalizations");
+		TestConsole.WriteLine("Testing multiple calls to GetLocalizations");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result1 = uut.GetLocalizations();
@@ -386,7 +385,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		IReadOnlyDictionary<string, string> allTranslations2 = result2[0].GetAllTranslations();
 
 		Assert.Equal(allTranslations1.Count, allTranslations2.Count);
-		_testConsole.WriteLine("[✔️ Passed] Multiple calls return consistent results.");
+		TestConsole.WriteLine("[✔️ Passed] Multiple calls return consistent results.");
 	}
 
 	[Fact]
@@ -403,7 +402,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 
 		FilesystemCsvReader uut = new(_testDirectory);
 
-		_testConsole.WriteLine("Testing CSV file with whitespace around keys/values");
+		TestConsole.WriteLine("Testing CSV file with whitespace around keys/values");
 
 		//--- ACT -------------------------------------------------------------
 		ISingleCultureDictionary[] result		= uut.GetLocalizations();
@@ -413,7 +412,7 @@ public sealed class FilesystemCsvReaderTests : IDisposable
 		string value1 = dictionary.GetTranslation("TestKey1");
 		Assert.Equal("TestValue1", value1);
 
-		_testConsole.WriteLine("[✔️ Passed] Keys and values trimmed correctly.");
+		TestConsole.WriteLine("[✔️ Passed] Keys and values trimmed correctly.");
 	}
 
 	#endregion GetLocalizations Tests
