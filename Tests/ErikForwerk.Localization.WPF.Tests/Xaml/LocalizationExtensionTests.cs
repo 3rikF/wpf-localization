@@ -4,6 +4,7 @@ using System.Windows.Data;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Models;
+using ErikForwerk.Localization.WPF.Xaml;
 
 using Moq;
 
