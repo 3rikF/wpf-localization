@@ -30,7 +30,13 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	{ }
 
 	public static TranslationCoreBindingSource Instance
-		{ get; } = new TranslationCoreBindingSource();
+		{ get; private set; } = new TranslationCoreBindingSource();
+
+	internal static void ResetInstance()
+	{
+		Instance.Reset();
+		Instance = new TranslationCoreBindingSource();
+	}
 
 	#endregion Construction
 

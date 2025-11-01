@@ -13,16 +13,7 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-// Collection Definition für sequentielle Ausführung
-[CollectionDefinition("TranslationCoreBindingSource Collection", DisableParallelization = true)]
-public class TranslationCoreBindingSourceCollection
-{
-	//--- This class has no implementation. ---
-	//--- It is only used as a marker for the collection. ---
-}
-
-//-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("TranslationCoreBindingSource Collection")]
+[Collection(nameof(TranslationCoreBindingSource))]
 public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
@@ -31,12 +22,12 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	public TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper)
 		: base(testOutputHelper)
 	{
-		TranslationCoreBindingSource.Instance.Reset();
+		TranslationCoreBindingSource.ResetInstance();
 	}
 
 	public void Dispose()
 	{
-		TranslationCoreBindingSource.Instance.Reset();
+		TranslationCoreBindingSource.ResetInstance();
 		GC.SuppressFinalize(this);
 	}
 
