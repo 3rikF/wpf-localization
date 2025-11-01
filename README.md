@@ -2,6 +2,27 @@
 
 A lightweight and easy-to-use localization framework for WPF/XAML applications that enables runtime language switching with minimal configuration.
 
+## ⚠️ Breaking Changes in v0.3.0
+
+**Important:** If you are upgrading from v0.2.2 or earlier, please note the following breaking changes:
+
+1. **LocalizationController Constructor**: The constructor no longer requires a `Window` parameter. Change from:
+   ```csharp
+   // Old (v0.2.2 and earlier)
+   private LocalizationController _localization = new(System.Windows.Application.Current.MainWindow);
+   ```
+   to:
+   ```csharp
+   // New (v0.3.0+)
+   private LocalizationController _localization = new();
+   ```
+
+2. **Language Synchronization**: Instead of passing a Window reference to the constructor, use the new `LocalizationBehavior.SyncLanguage` attached property in XAML:
+   ```xaml
+   <Window ... loc:LocalizationBehavior.SyncLanguage="True">
+   ```
+   This automatically synchronizes the element's language with the current localization culture.
+
 ## Features
 
 This framework aims to simplify internationalization (i18n) in WPF applications by providing:
@@ -58,7 +79,7 @@ using ErikForwerk.Localization.WPF.Models;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
-    private LocalizationController _localization = new(System.Windows.Application.Current.MainWindow);
+    private LocalizationController _localization = new();
 
     public MainWindowViewModel()
     {
@@ -92,10 +113,35 @@ public class MainWindowViewModel : INotifyPropertyChanged
 Add the XML namespace to your XAML file:
 
 ```xaml
-xmlns:loc="clr-namespace:ErikForwerk.Localization.WPF;assembly=ErikForwerk.Localization.WPF"
+xmlns:loc="clr-namespace:ErikForwerk.Localization.WPF.Xaml;assembly=ErikForwerk.Localization.WPF"
 ```
 
-The language of the window will be set when initializing the `LocalizationController` instance and when changing the `CurrentCulture``on that instance using the `Window` reference, that was handed in the constructor.
+#### Enable Automatic Language Synchronization
+
+To automatically synchronize the language of a Window or any FrameworkElement with the current localization culture, use the `LocalizationBehavior.SyncLanguage` attached property:
+
+```xaml
+<Window ... loc:LocalizationBehavior.SyncLanguage="True">
+```
+
+This behavior:
+- Automatically updates the element's `Language` property when the culture changes
+- Handles cleanup on element unload to prevent memory leaks
+- Can be applied to any `FrameworkElement`, not just windows
+
+**Example:**
+
+```xaml
+<Window
+    x:Class="MyApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:loc="clr-namespace:ErikForwerk.Localization.WPF.Xaml;assembly=ErikForwerk.Localization.WPF"
+    loc:LocalizationBehavior.SyncLanguage="True"
+    Title="MainWindow">
+    <!-- Your content here -->
+</Window>
+```
 
 #### Static Translation
 
