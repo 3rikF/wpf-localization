@@ -128,7 +128,7 @@ public static class LocalizationBehavior
 
 	/// <summary>
 	/// Releases all culture change event handlers and unsubscribes from the Unloaded event for tracked framework elements.
-	/// This especially important for Unit-Tests to avoid memory leaks and ensure proper cleanup of resources.
+	/// This is especially important for Unit-Tests to avoid memory leaks and ensure proper cleanup of resources.
 	/// </summary>
 	/// <remarks>
 	/// Call this method to remove all event subscriptions and clear internal handler tracking.

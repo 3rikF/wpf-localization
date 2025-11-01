@@ -126,7 +126,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			//--- ASSERT ----------------------------------------------------------
 			int aliveCount = elements.Count(wr => wr.IsAlive);
 			TestConsole.WriteLine($"Alive elements:     [{elements.Count(wr => wr.IsAlive)}]");
-			Assert.True(aliveCount < 50, $"Zu viele Objekte noch im Speicher: {aliveCount}");
+			Assert.True(aliveCount < 50, $"Too many objects still in memory: {aliveCount}");
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}
