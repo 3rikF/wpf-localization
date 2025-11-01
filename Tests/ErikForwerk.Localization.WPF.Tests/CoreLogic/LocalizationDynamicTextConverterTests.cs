@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+﻿
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Data;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Models;
@@ -19,7 +19,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 
 	private static readonly CultureInfo TEST_CULTURE = CultureInfo.GetCultureInfo("de-DE");
 
-	public static TheoryData<object?[]> EmptyValuesData()
+	public static TheoryData<string?[]> EmptyValuesData()
 	{
 		return [
 			[],
@@ -71,7 +71,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 
 	[Theory]
 	[MemberData(nameof(EmptyValuesData))]
-	public void Convert_WithEmptyValues_ReturnsEmptyString(object?[] langKeyParam)
+	public void Convert_WithEmptyValues_ReturnsEmptyString(string?[] langKeyParam)
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationDynamicTextConverter uut	= new();
@@ -121,10 +121,10 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 	}
 
 	[Fact]
-	public void Convert_WithDesignTimeFallback_ReturnsFormattedFallback()
+	public void Convert_WithFallback_ReturnsFormattedFallback()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationDynamicTextConverter uut	= LocalizationDynamicTextConverter.GetUnitTestInstance(true);
+		LocalizationDynamicTextConverter uut	= new ();
 		object[] values							= [DependencyProperty.UnsetValue];
 		const string FALLBACK					= "DesignTimeKey";
 		PlaceholderConverterParameter parameter	= new(FALLBACK, false);
@@ -140,10 +140,10 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 	}
 
 	[Fact]
-	public void Convert_WithUnsetValueAndNoParameter_ReturnsDefaultFallback()
+	public void Convert_WithUnsetFallback_ReturnsDefaultFallback()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationDynamicTextConverter uut	= LocalizationDynamicTextConverter.GetUnitTestInstance(true);
+		LocalizationDynamicTextConverter uut	= new ();
 		object[] values							= [DependencyProperty.UnsetValue];
 
 		DesignerProperties.SetIsInDesignMode(new DependencyObject(), true);
