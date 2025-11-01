@@ -13,17 +13,8 @@ namespace ErikForwerk.Localization.WPF.CoreLogic;
 /// </summary>
 internal sealed class LocalizationDynamicTextConverter : IMultiValueConverter
 {
-	private readonly Func<DependencyObject, bool> _isInDesignMode;
-
 	public LocalizationDynamicTextConverter()
-		: this(DesignerProperties.GetIsInDesignMode)
 	{ }
-
-	private LocalizationDynamicTextConverter(Func<DependencyObject, bool> isInDesignMode)
-		=> _isInDesignMode = isInDesignMode;
-
-	internal static LocalizationDynamicTextConverter GetUnitTestInstance(bool isInDesignMode)
-		=> new LocalizationDynamicTextConverter(_ => isInDesignMode);
 
 	public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 	{
