@@ -194,17 +194,22 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 			, () => uut.AddTranslations(mockDict.Object));
 	}
 
-	[Fact]
-	public void AddTranslations_NewCulture_RaisesPropertyChangedForLocalizedText()
+	[Theory]
+	[InlineData("de-de")]
+	[InlineData("en-us")]
+	[InlineData("fr-fr")]
+	[InlineData("jp-ja")]
+	public void AddTranslations_NewCulture_RaisesPropertyChangedForLocalizedText(string testCultureName)
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new("de-DE");
+		CultureInfo testCulture					= new(testCultureName);
 		Mock<ISingleCultureDictionary> mockDict	= new();
 		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
 
 		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
 
 		//--- ACT & ASSERT -----------------------------------------------
+		uut.CurrentCulture						= testCulture;  //--- ensure, that the dictionary-culture is also the current culture ---
 		Assert.PropertyChanged(
 			uut
 			, nameof(TranslationCoreBindingSource.LocalizedText)
