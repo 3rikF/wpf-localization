@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-using System.Windows;
-using System.Windows.Markup;
+﻿
+using System.Globalization;
 
+using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.Localization.WPF.Models;
 
@@ -11,8 +11,24 @@ using Moq;
 namespace ErikForwerk.Localization.WPF.Tests.Models;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-public sealed class LocalizationControllerTests
+public sealed class LocalizationControllerTests: IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Construction
+
+	public LocalizationControllerTests()
+	{
+		TranslationCoreBindingSource.Instance.Reset();
+	}
+
+	public void Dispose()
+	{
+		TranslationCoreBindingSource.Instance.Reset();
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion Construction
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Data
 
@@ -25,24 +41,14 @@ public sealed class LocalizationControllerTests
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Helper Methods
 
-	//private static Mock<ILocalizationCore> CreateMockLocalizationCore(CultureInfo initialCulture)
-	//{
-	//	Mock<ILocalizationCore> mock= new();
-	//
-	//	return mock;
-	//}
-
-	private static LocalizationController CreateTestLocalizationController(CultureInfo initialCulture
-		, out Mock<LocalizationController.IWindow> out_mockWindow
-		, out Mock<ILocalizationCore> out_mockCore)
+	private static LocalizationController CreateTestLocalizationController(CultureInfo initialCulture, out Mock<ILocalizationCore> out_mockCore)
 	{
-		out_mockWindow	= new();
-		out_mockCore	= new();
+		out_mockCore = new();
 		_ = out_mockCore.SetupProperty(x => x.CurrentCulture, initialCulture);
 		_ = out_mockCore.Setup(x => x.SupportedCultures).Returns([TEST_CULTURE_EN, TEST_CULTURE_DE]);
 		_ = out_mockCore.Setup(x => x.AddTranslations(It.IsAny<ISingleCultureDictionary>()));
 
-		return LocalizationController.CreateUnitTestInstance(out_mockWindow.Object, out_mockCore.Object);
+		return LocalizationController.CreateUnitTestInstance(out_mockCore.Object);
 	}
 
 	#endregion Helper Methods
@@ -66,11 +72,41 @@ public sealed class LocalizationControllerTests
 	//}
 
 	[Fact]
+	public void Ctor_Parameterless_InitializesSuccessfully()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		//--- ACT -------------------------------------------------------------
+		LocalizationController uut = new();
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.NotNull(uut);
+		Assert.NotNull(uut.CurrentCulture);
+		Assert.NotNull(uut.SupportedCultures);
+	}
+
+	[Fact]
+	public void Ctor_Parameterless_UsesNullWindowWrapper()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		//--- ACT -------------------------------------------------------------
+		LocalizationController uut = new();
+
+		//--- ASSERT ----------------------------------------------------------
+		// Should not throw when changing culture with NullWindowWrapper
+		CultureInfo originalCulture	= uut.CurrentCulture;
+		CultureInfo newCulture		= originalCulture.Name == "en-US" ? TEST_CULTURE_DE : TEST_CULTURE_EN;
+
+		uut.CurrentCulture = newCulture;
+
+		Assert.Equal(newCulture, uut.CurrentCulture);
+	}
+
+	[Fact]
 	public void CreateUnitTestInstance_WithMockCore_InitializesSuccessfully()
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		//--- ACT -------------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(TEST_CULTURE_EN, out _, out _);
+		LocalizationController uut = CreateTestLocalizationController(TEST_CULTURE_EN, out _);
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.NotNull(uut);
@@ -87,7 +123,6 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out _
 			, out Mock<ILocalizationCore> mockCore);
 
 		//--- ACT -------------------------------------------------------------
@@ -96,7 +131,7 @@ public sealed class LocalizationControllerTests
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(TEST_CULTURE_DE, result);
 		//--- once in the constructor and once in the property get ---
-		mockCore.VerifyGet(x => x.CurrentCulture, Times.Exactly(2));
+		mockCore.VerifyGet(x => x.CurrentCulture, Times.Once());
 	}
 
 	[Fact]
@@ -105,8 +140,7 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_EN
-			, out var mockWindow
-			, out var mockCore);
+			, out Mock<ILocalizationCore>? mockCore);
 		//--- ACT -------------------------------------------------------------
 		uut.CurrentCulture = TEST_CULTURE_DE;
 
@@ -114,51 +148,6 @@ public sealed class LocalizationControllerTests
 		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
 
 		mockCore.VerifySet(x => x.CurrentCulture = TEST_CULTURE_DE, Times.Once());
-		mockWindow.VerifySet(x => x.Language = XmlLanguage.GetLanguage(TEST_CULTURE_DE.IetfLanguageTag), Times.Once());
-	}
-
-	[Fact]
-	public void CurrentCulture_SameValue_DoesNotUpdate()
-	{
-		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
-			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
-
-		//--- ACT -------------------------------------------------------------
-		uut.CurrentCulture = TEST_CULTURE_DE;
-
-		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
-
-		mockCore.VerifySet(x => x.CurrentCulture = It.IsAny<CultureInfo>(), Times.Never());
-
-		//--- once in the constructor, but not in the property set ---
-		mockWindow.VerifySet(x => x.Language = It.IsAny<XmlLanguage>(), Times.Once());
-	}
-
-	[Fact]
-	public void CurrentCulture_SetWithWindow_UpdatesWindowLanguage()
-	{
-		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
-			TEST_CULTURE_EN
-			, out var mockWindow
-			, out var mockCore);
-
-		//--- ACT -------------------------------------------------------------
-		uut.CurrentCulture = TEST_CULTURE_DE;
-
-		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
-
-		mockCore.VerifySet(x => x.CurrentCulture = TEST_CULTURE_DE, Times.Once());
-
-		//--- assert, that the mock was called once with each language ---
-		mockWindow.VerifySet(x => x.Language = It.IsAny<XmlLanguage>(), Times.Exactly(2));
-		mockWindow.VerifySet(x => x.Language = XmlLanguage.GetLanguage(TEST_CULTURE_EN.IetfLanguageTag), Times.Once());
-		mockWindow.VerifySet(x => x.Language = XmlLanguage.GetLanguage(TEST_CULTURE_DE.IetfLanguageTag), Times.Once());
 	}
 
 	#endregion CurrentCulture Property
@@ -172,8 +161,7 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
+			, out Mock<ILocalizationCore>? mockCore);
 
 		//--- ACT -------------------------------------------------------------
 		IEnumerable<CultureInfo> result = uut.SupportedCultures;
@@ -196,8 +184,7 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
+			, out Mock<ILocalizationCore>? mockCore);
 
 		SingleCultureDictionary dictionary = new(TEST_CULTURE_DE);
 		dictionary.AddOrUpdate("Hello", "Hallo");
@@ -215,8 +202,7 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
+			, out Mock<ILocalizationCore>? mockCore);
 
 		SingleCultureDictionary dict1 = new(TEST_CULTURE_DE);
 		dict1.AddOrUpdate("Hello", "Hallo");
@@ -245,8 +231,7 @@ public sealed class LocalizationControllerTests
 		//--- ARRANGE ---------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
+			, out Mock<ILocalizationCore>? mockCore);
 
 		const string RESOURCE_PATH		= @"TestResources/TestTranslations.de-DE.csv";
 
@@ -269,9 +254,7 @@ public sealed class LocalizationControllerTests
 		//--- ACT -------------------------------------------------------------
 		LocalizationController uut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
-			, out var mockWindow
-			, out var mockCore);
-
+			, out Mock<ILocalizationCore>? mockCore);
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
