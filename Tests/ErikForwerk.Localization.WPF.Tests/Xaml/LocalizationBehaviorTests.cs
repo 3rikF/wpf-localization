@@ -1,5 +1,7 @@
 ﻿
+using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -16,6 +18,23 @@ namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 [Collection("STA")]
 public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTestBase(toh)
 {
+	//-------------------------------------------------------------------------------------------------------------
+	#region Test Helper
+
+	private static int LocalizationBehavior_GetHandlerCount()
+	{
+		FieldInfo privateInternalDictionary = typeof(LocalizationBehavior)
+			.GetField("HANDLERS", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+		IDictionary<FrameworkElement, PropertyChangedEventHandler> handlers =
+			(IDictionary<FrameworkElement, PropertyChangedEventHandler>)privateInternalDictionary.GetValue(null)!;
+
+		return handlers.Count;
+	}
+
+	#endregion Test Helper
+
+
 	[STATheory]
 	[InlineData("en-us")]
 	[InlineData("de-de")]
@@ -149,6 +168,55 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 		, () => LocalizationBehavior.CleanUp());
 	}
 
-	[Fact]
-	public void  OnSyncLanguageChanged
+	[STAFact]
+	public void OnSyncLanguageChanged_NonFrameworkElement_ShouldDoNothing()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+
+
+		TranslationCoreBindingSource.ResetInstance();
+		RunOnSTAThread(() =>
+		{
+			DependencyObject obj = new();
+			int originalHandlerElements			= LocalizationBehavior_GetHandlerCount();
+
+			//--- ACT ---------------------------------------------------------
+			// should not throw when activating or deactivating
+			LocalizationBehavior.SetSyncLanguage(obj, true);
+			int shouldBeUnchangedCount			= LocalizationBehavior_GetHandlerCount();
+
+			LocalizationBehavior.SetSyncLanguage(obj, false);
+			int shouldStillBeUnchangedCount		= LocalizationBehavior_GetHandlerCount();
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(originalHandlerElements, shouldBeUnchangedCount);
+			Assert.Equal(originalHandlerElements, shouldStillBeUnchangedCount);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STAFact]
+	public void OnSyncLanguageChanged_SameElementRepeatedly_ShouldNotRegisterMultipleHandlers()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		RunOnSTAThread(() =>
+		{
+			TextBlock element = new();
+			int originalHandlerElements			= LocalizationBehavior_GetHandlerCount();
+
+			//--- ACT ---------------------------------------------------------
+			LocalizationBehavior.SetSyncLanguage(element, true);
+			LocalizationBehavior.SetSyncLanguage(element, true); // repeat activation
+			int afterRepeatActivationCount		= LocalizationBehavior_GetHandlerCount();
+
+			LocalizationBehavior.SetSyncLanguage(element, false);
+			LocalizationBehavior.SetSyncLanguage(element, false); // repeat deactivation
+			int afterRepeatDeactivationCount	= LocalizationBehavior_GetHandlerCount();
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(originalHandlerElements + 1, afterRepeatActivationCount);
+			Assert.Equal(originalHandlerElements, afterRepeatDeactivationCount);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
 }
