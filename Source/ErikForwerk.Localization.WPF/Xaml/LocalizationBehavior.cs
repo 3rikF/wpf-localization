@@ -47,9 +47,10 @@ public static class LocalizationBehavior
 
 		if ((bool)e.NewValue)
 		{
+			//--- this is impossible, since the [OnSyncLanguageChanged]-event is not raised when the same value is set twice ---
 			//--- prevent multiple registrations ---
-			if (HANDLERS.ContainsKey(element))
-				return;
+			//if (HANDLERS.ContainsKey(element))
+			//	return;
 
 			//--- initial update ---
 			UpdateElementLanguage(element);
