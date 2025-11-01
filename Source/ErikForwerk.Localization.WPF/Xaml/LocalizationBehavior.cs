@@ -124,4 +124,24 @@ public static class LocalizationBehavior
 		CultureInfo culture = TranslationCoreBindingSource.Instance.CurrentCulture;
 		element.Language = XmlLanguage.GetLanguage(culture.IetfLanguageTag);
 	}
+
+	/// <summary>
+	/// Releases all culture change event handlers and unsubscribes from the Unloaded event for tracked framework elements.
+	/// This especially important for Unit-Tests to avoid memory leaks and ensure proper cleanup of resources.
+	/// </summary>
+	/// <remarks>
+	/// Call this method to remove all event subscriptions and clear internal handler tracking.
+	/// This is typically used during application shutdown or when disposing resources to prevent memory leaks.
+	/// After calling this method, no culture change notifications will be delivered to previously tracked elements.
+	/// </remarks>
+	internal static void CleanUp()
+	{
+		foreach (FrameworkElement element in HANDLERS.Keys.ToList())
+		{
+			UnsubscribeCultureChangedHandler(element);
+			element.Unloaded -= OnElementUnloaded;
+		}
+
+		HANDLERS.Clear();
+	}
 }
