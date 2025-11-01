@@ -35,7 +35,7 @@ jobs:
 
     env:
       # Replace with your solution name, i.e. MyWpfApp.sln.
-      SOLUTION_NAME: "./WpfLocalizationTest.slnx"
+      SOLUTION_NAME: "./WpfLocalization.slnx"
 
     steps:
     - name: Checkout
