@@ -52,7 +52,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 
 			TestConsole.WriteLine("[✔️ PASSED] All elements synchronized correctly.");
 		}
-		, LocalizationBehavior.CleanUp);
+		, () => LocalizationBehavior.CleanUp());
 	}
 
 	[Theory]
@@ -74,7 +74,8 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 
 			TestConsole.WriteLine($"[✔️ PASSED] GetSyncLanguage returned expected value: [{expectedValue}]");
 		}
-		, LocalizationBehavior.CleanUp);
+		, () => LocalizationBehavior.CleanUp());
+
 	}
 
 	[STAFact]
@@ -108,6 +109,46 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TestConsole.WriteLine($"Alive elements:     [{elements.Count(wr => wr.IsAlive)}]");
 			Assert.True(aliveCount < 50, $"Zu viele Objekte noch im Speicher: {aliveCount}");
 		}
-		, LocalizationBehavior.CleanUp);
+		, () => LocalizationBehavior.CleanUp());
 	}
+
+	// New test: ensure the else-branch in OnSyncLanguageChanged unsubscribes and prevents further updates
+	/// <summary>
+	/// Tests that deactivating language synchronization prevents further updates to the
+	/// System.Windows.FrameworkElement.Language property when the culture changes.
+	/// (The else-branch in <see cref="LocalizationBehavior.OnSyncLanguageChanged"/> is executed.)
+	/// </summary>
+	/// <remarks>
+	/// This test verifies that when LocalizationBehavior.SetSyncLanguage is set to  false, the element's
+	/// language remains unchanged even if the current culture  in TranslationCoreBindingSource.Instance is updated.
+	/// This ensures that the synchronization mechanism is properly unsubscribed.
+	/// </remarks>
+	[STAFact]
+	public void OnSyncLanguageChanged_Deactivation_ShouldPreventFurtherLanguageUpdates()
+	{
+		TranslationCoreBindingSource.ResetInstance();
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			TextBlock element = new();
+
+			// Activate synchronization and perform an initial culture change
+			LocalizationBehavior.SetSyncLanguage(element, true);
+			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo("en-us");
+			Assert.Equal("en-us", element.Language.IetfLanguageTag);
+
+			//--- ACT: deactivate synchronization (this should trigger the else-branch) ---
+			LocalizationBehavior.SetSyncLanguage(element, false);
+
+			// Change culture again; element.Language should NOT be updated
+			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo("de-de");
+
+			//--- ASSERT ----------------------------------------------------------
+			Assert.Equal("en-us", element.Language.IetfLanguageTag);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[Fact]
+	public void  OnSyncLanguageChanged
 }
