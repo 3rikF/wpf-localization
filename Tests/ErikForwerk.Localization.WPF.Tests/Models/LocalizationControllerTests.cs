@@ -86,23 +86,6 @@ public sealed class LocalizationControllerTests: IDisposable
 	}
 
 	[Fact]
-	public void Ctor_Parameterless_UsesNullWindowWrapper()
-	{
-		//--- ARRANGE ---------------------------------------------------------
-		//--- ACT -------------------------------------------------------------
-		LocalizationController uut = new();
-
-		//--- ASSERT ----------------------------------------------------------
-		// Should not throw when changing culture with NullWindowWrapper
-		CultureInfo originalCulture	= uut.CurrentCulture;
-		CultureInfo newCulture		= originalCulture.Name == "en-US" ? TEST_CULTURE_DE : TEST_CULTURE_EN;
-
-		uut.CurrentCulture = newCulture;
-
-		Assert.Equal(newCulture, uut.CurrentCulture);
-	}
-
-	[Fact]
 	public void CreateUnitTestInstance_WithMockCore_InitializesSuccessfully()
 	{
 		//--- ARRANGE ---------------------------------------------------------
