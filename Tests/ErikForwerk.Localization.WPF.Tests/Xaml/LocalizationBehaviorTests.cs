@@ -18,8 +18,8 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 {
 	[STATheory]
 	[InlineData("en-us")]
-	//[InlineData("de-de")]		// all following tests will fail du to some STA threading issue
-	//[InlineData("jp-JA")]
+	[InlineData("de-de")]
+	[InlineData("jp-ja")]
 	public void RealWorldScenario_ComplexUITree_ShouldSynchronizeAllElements(string langName)
 	{
 		RunOnSTAThread(() =>
@@ -51,10 +51,30 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			Assert.Equal(langName, button.Language.IetfLanguageTag);
 
 			TestConsole.WriteLine("[✔️ PASSED] All elements synchronized correctly.");
+		}
+		, LocalizationBehavior.CleanUp);
+	}
 
-		});
-		GC.Collect();
-		GC.WaitForPendingFinalizers();
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ZZGetSyncLanguage_ReturnsSetValue(bool expectedValue)
+	{
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			TextBlock element = new();
+			LocalizationBehavior.SetSyncLanguage(element, expectedValue);
+
+			//--- ACT -------------------------------------------------------------
+			bool actualValue = LocalizationBehavior.GetSyncLanguage(element);
+
+			//--- ASSERT ----------------------------------------------------------
+			Assert.Equal(expectedValue, actualValue);
+
+			TestConsole.WriteLine($"[✔️ PASSED] GetSyncLanguage returned expected value: [{expectedValue}]");
+		}
+		, LocalizationBehavior.CleanUp);
 	}
 
 	[STAFact]
@@ -87,6 +107,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			int aliveCount = elements.Count(wr => wr.IsAlive);
 			TestConsole.WriteLine($"Alive elements:     [{elements.Count(wr => wr.IsAlive)}]");
 			Assert.True(aliveCount < 50, $"Zu viele Objekte noch im Speicher: {aliveCount}");
-		});
+		}
+		, LocalizationBehavior.CleanUp);
 	}
 }
