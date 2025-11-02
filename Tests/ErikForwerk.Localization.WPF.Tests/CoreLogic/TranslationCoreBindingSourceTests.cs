@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿
+// ignore spelling: jp laceholders
+
+using System.ComponentModel;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
@@ -13,25 +16,21 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection(nameof(TranslationCoreBindingSource))]
-public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
+public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper), IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
-	#region Construction
+	#region Test Cleanup
 
-	public TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper)
-		: base(testOutputHelper)
-	{
-		TranslationCoreBindingSource.ResetInstance();
-	}
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
 
 	public void Dispose()
 	{
-		TranslationCoreBindingSource.ResetInstance();
+		_testModetracker.Dispose();
 		GC.SuppressFinalize(this);
 	}
 
-	#endregion Construction
+	#endregion Test Cleanup
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
@@ -51,11 +50,11 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	public void LocalizedText_ReturnsEmptyString()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		TranslationCoreBindingSource instance = TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 
 		//--- ACT & ASSERT -----------------------------------------------
 		//--- ASSERT -----------------------------------------------------
-		Assert.Empty(instance.LocalizedText);
+		Assert.Empty(uut.LocalizedText);
 	}
 
 	[Fact]
@@ -65,11 +64,11 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 		// That makes this test a little pointless, but at least it documents the initial state.
 
 		//--- ARRANGE ---------------------------------------------------
-		TranslationCoreBindingSource instance = TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 
 		//--- ACT & ASSERT -----------------------------------------------
 		//--- ASSERT -----------------------------------------------------
-		Assert.Empty(instance.SupportedCultures);
+		Assert.Empty(uut.SupportedCultures);
 	}
 
 	#endregion Construction
@@ -81,29 +80,29 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	public void CurrentCulture_InitiallyThreadCurrentUICulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo threadCulture				= Thread.CurrentThread.CurrentUICulture;
-		TranslationCoreBindingSource instance	= TranslationCoreBindingSource.Instance;
+		CultureInfo threadCulture			= Thread.CurrentThread.CurrentUICulture;
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT & ASSERT -----------------------------------------------
 		//--- ASSERT -----------------------------------------------------
-		Assert.Equal(threadCulture, instance.CurrentCulture);
+		Assert.Equal(threadCulture, uut.CurrentCulture);
 	}
 
 	[Fact]
 	public void CurrentCulture_SetNewCulture_UpdatesThreadCurrentUICulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo newCulture					= new("fr-FR");
-		TranslationCoreBindingSource instance	= TranslationCoreBindingSource.Instance;
+		CultureInfo newCulture				= new("fr-FR");
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
 		Assert.PropertyChanged(
-			instance
+			uut
 			, nameof(TranslationCoreBindingSource.LocalizedText)
-			, () => instance.CurrentCulture = newCulture);
+			, () => uut.CurrentCulture = newCulture);
 
 		//--- ASSERT -----------------------------------------------------
-		Assert.Equal(newCulture, instance.CurrentCulture);
+		Assert.Equal(newCulture, uut.CurrentCulture);
 		Assert.Equal(newCulture, Thread.CurrentThread.CurrentUICulture);
 	}
 
@@ -111,11 +110,10 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	public void CurrentCulture_SetSameCulture_DoesNotUpdate()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo ci					= new("fr-FR");
-		TranslationCoreBindingSource uut= TranslationCoreBindingSource.Instance;
-
-		uut.CurrentCulture				= ci;
-		uut.PropertyChanged				+= FailTest;
+		CultureInfo ci						= new("fr-FR");
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
+		uut.CurrentCulture					= ci;
+		uut.PropertyChanged					+= FailTest;
 
 		//--- we manually reset [Thread.CurrentThread.CurrentUICulture] to prove that it does not get changed again. ---
 		Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
@@ -138,7 +136,7 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 
 	[Fact]
 	public void AddTranslations_NullDictionary_ThrowsException()
-		{
+	{
 		//--- ARRANGE ---------------------------------------------------
 		CultureInfo ci						= CultureInfo.CreateSpecificCulture("de-DE");
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
@@ -165,7 +163,7 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 		mockDict2.SetupGet(m => m.Culture).Returns(ci).Verifiable(Times.AtLeastOnce());
 		mockDict2.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never()); //--- it's only "never", because the first mock does not actually call [AddOrUpdate] on it.
 
-		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 		uut.AddTranslations(mockDict1.Object);
 
 		//--- ACT -------------------------------------------------------
@@ -296,7 +294,6 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 		Mock<ISingleCultureDictionary> mockDict2 = new();
 		_ = mockDict2.SetupGet(m => m.Culture).Returns(SecondCulture);
 
-		//---
 		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
 		//--- add first dictionary, this will sett the first and only supported culture for now ---
 		uut.AddTranslations(mockDict1.Object);
@@ -341,10 +338,10 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	public void GetTranslation_WithPlaceHolders_NullOrEmptyKeyInvalidKey_ReturnsEmptyString(bool parsePlaceholders, string? invalidKey)
 	{
 		//--- ARRANGE ---------------------------------------------------
-		TranslationCoreBindingSource instance = TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
-		string result = instance.GetTranslation(invalidKey!, parsePlaceholders);
+		string result = uut.GetTranslation(invalidKey!, parsePlaceholders);
 
 		//--- ASSERT -----------------------------------------------------
 		Assert.Equal(string.Empty, result);
@@ -356,7 +353,7 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 		//--- ARRANGE ---------------------------------------------------
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 		const string TEST_KEY				= "NonExistentKey";
-		const string EXPECTED_TRANSLATION = "!!!NonExistentKey!!!";
+		const string EXPECTED_TRANSLATION	= "!!!NonExistentKey!!!";
 
 		//--- ACT -------------------------------------------------------
 		string result						= uut.GetTranslation(TEST_KEY, parsePlaceholders: false);
@@ -384,9 +381,9 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 			.Returns((string key) => EXPECTED_TRANSLATION)
 			.Verifiable(Times.Once());
 
-		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 		uut.AddTranslations(mockDict.Object);
-		uut.CurrentCulture					= TEST_CI;
+		uut.CurrentCulture = TEST_CI;
 
 		//--- ACT -------------------------------------------------------
 		string result = uut.GetTranslation(TEST_KEY, parsePlaceholders: false);
@@ -419,9 +416,9 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 			.Returns((string key) => "Platzhaltern")
 			.Verifiable(Times.Once());
 
-		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
+		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 		uut.AddTranslations(mockDict.Object);
-		uut.CurrentCulture					= TEST_CI;
+		uut.CurrentCulture = TEST_CI;
 
 		//--- ACT -------------------------------------------------------
 		string result = uut.GetTranslation(TEST_KEY, parsePlaceholders: true);
@@ -438,62 +435,32 @@ public sealed class TranslationCoreBindingSourceTests : TestBase, IDisposable
 	#region Reset
 
 	[Fact]
-	public void Reset_RaisesPropertyChangedForSupportedCultures()
+	public void Reset_RemovesAllPropertyChangedHandlers()
 	{
 		//--- ARRANGE ---------------------------------------------------
+		// create a fresh test instance and subscribe handlers
+		using TranslationCoreBindingSource.TestModeTracker tracker = new();
 		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
 
-		//--- ACT & ASSERT -----------------------------------------------
-		Assert.PropertyChanged(
-			uut
-			, nameof(TranslationCoreBindingSource.SupportedCultures)
-			, () => uut.Reset());
-	}
+		int calls = 0;
+		PropertyChangedEventHandler handler = (s, a) => calls++;
 
-	[Fact]
-	public void Reset_RaisesPropertyChanges()
-	{
-		//--- ARRANGE ---------------------------------------------------
-		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
+		uut.PropertyChanged += handler;
+		uut.PropertyChanged += handler;
 
-		//--- ACT & ASSERT -----------------------------------------------
-		Assert.PropertyChanged(
-			uut
-			, nameof(TranslationCoreBindingSource.LocalizedText)
-			, uut.Reset);
-
-		Assert.PropertyChanged(
-			uut
-			, nameof(TranslationCoreBindingSource.CurrentCulture)
-			, uut.Reset);
-
-		Assert.PropertyChanged(
-			uut
-			, nameof(TranslationCoreBindingSource.SupportedCultures)
-			, uut.Reset);
-	}
-
-	[Fact]
-	public void Reset_ClearsDictionariesAndResetsCulture()
-	{
-		//--- ARRANGE ---------------------------------------------------
-		CultureInfo testCulture					= new("de-DE");
-		Mock<ISingleCultureDictionary> mockDict	= new();
-		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
-
-		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
-		uut.AddTranslations(mockDict.Object);
-
-		CultureInfo currentThreadCulture		= Thread.CurrentThread.CurrentUICulture;
+		// sanity: handlers are called
+		uut.RaisePropertyChanged(nameof(TranslationCoreBindingSource.LocalizedText));
+		Assert.Equal(2, calls);
 
 		//--- ACT -------------------------------------------------------
-		uut.Reset();
+		// disposing the tracker will call Reset() on the test instance
+		tracker.Dispose();
 
-		//--- ASSERT -----------------------------------------------------
-		Assert.Empty(uut.SupportedCultures);
-		Assert.Equal(currentThreadCulture, uut.CurrentCulture);
+		//--- ASSERT ----------------------------------------------------
+		// handlers must no longer be invoked after reset
+		uut.RaisePropertyChanged(nameof(TranslationCoreBindingSource.LocalizedText));
+		Assert.Equal(2, calls);
 	}
 
 	#endregion Reset
-
 }

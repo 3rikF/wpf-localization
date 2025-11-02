@@ -11,24 +11,21 @@ using Moq;
 namespace ErikForwerk.Localization.WPF.Tests.Models;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection($"{nameof(TranslationCoreBindingSource)}-{nameof(LocalizationController)}")]
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public sealed class LocalizationControllerTests: IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
-	#region Construction
+	#region Test Cleanup
 
-	public LocalizationControllerTests()
-	{
-		TranslationCoreBindingSource.Instance.Reset();
-	}
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
 
 	public void Dispose()
 	{
-		TranslationCoreBindingSource.Instance.Reset();
+		_testModetracker.Dispose();
 		GC.SuppressFinalize(this);
 	}
 
-	#endregion Construction
+	#endregion Test Cleanup
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Data
@@ -56,21 +53,6 @@ public sealed class LocalizationControllerTests: IDisposable
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
-
-	//[Fact]
-	//public void Ctor_WithWindow_InitializesSuccessfully()
-	//{
-	//	//--- ARRANGE ---------------------------------------------------------
-	//	Window window = new();
-	//
-	//	//--- ACT -------------------------------------------------------------
-	//	LocalizationController uut = new(window);
-	//
-	//	//--- ASSERT ----------------------------------------------------------
-	//	Assert.NotNull(uut);
-	//	Assert.NotNull(uut.CurrentCulture);
-	//	Assert.NotNull(uut.SupportedCultures);
-	//}
 
 	[Fact]
 	public void Ctor_Parameterless_InitializesSuccessfully()
@@ -180,7 +162,7 @@ public sealed class LocalizationControllerTests: IDisposable
 		mockCore.Verify(x => x.AddTranslations(dictionary), Times.Once());
 	}
 
-	[Fact]
+	[Fact] // ignore spelling: bonjour
 	public void AddTranslations_MultipleDictionaries_DelegatesToCoreForEach()
 	{
 		//--- ARRANGE ---------------------------------------------------------

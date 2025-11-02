@@ -12,9 +12,21 @@ using Moq;
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("STA")]
-public sealed class LocalizationExtensionTests
+public sealed class LocalizationExtensionTests : IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Test Cleanup
+
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
+
+	public void Dispose()
+	{
+		_testModetracker.Dispose();
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion Test Cleanup
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Helper Methods
 

@@ -12,9 +12,22 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection(nameof(TranslationCoreBindingSource))]
-public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh)
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
+public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh) : IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Test Cleanup
+
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
+
+	public void Dispose()
+	{
+		_testModetracker.Dispose();
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion Test Cleanup
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Data
 
@@ -56,6 +69,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 		SingleCultureDictionary dict	= new(TEST_CULTURE);
 		dict.AddOrUpdate(TEST_KEY, TEST_TRANSLATION);
 
+		using TranslationCoreBindingSource.TestModeTracker tmt = new ();
 		TranslationCoreBindingSource.Instance.CurrentCulture = TEST_CULTURE;
 		TranslationCoreBindingSource.Instance.AddTranslations(dict);
 
@@ -101,6 +115,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 		SingleCultureDictionary dict = new(TEST_CULTURE);
 		dict.AddOrUpdate(INNER_KEY, INNER_TRANSLATION);
 
+		using TranslationCoreBindingSource.TestModeTracker tmt = new ();
 		TranslationCoreBindingSource.Instance.CurrentCulture = TEST_CULTURE;
 		TranslationCoreBindingSource.Instance.AddTranslations(dict);
 

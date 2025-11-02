@@ -12,14 +12,46 @@ using ErikForwerk.Localization.WPF.Tools;
 namespace ErikForwerk.Localization.WPF.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChanged, ILocalizationCore
+internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChanged, ILocalizationCore, IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Nested Types
+
+	internal sealed class TestModeTracker : IDisposable
+	{
+		//-----------------------------------------------------------------------------------------------------------------
+		#region Fields
+
+		private readonly TranslationCoreBindingSource _originalInstance;
+
+		#endregion Fields
+
+		//-----------------------------------------------------------------------------------------------------------------
+		#region Construction
+		public TestModeTracker()
+		{
+			_originalInstance	= Instance;
+			Instance			= new TranslationCoreBindingSource();
+		}
+		public void Dispose()
+		{
+			Instance.Dispose();
+			Instance = _originalInstance;
+
+			GC.SuppressFinalize(this);
+		}
+
+		#endregion Construction
+	}
+	#endregion Nested Types
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
 	private readonly CultureInfo _originalThreadCulture = Thread.CurrentThread.CurrentUICulture;
 	private CultureInfo _currentCulture = Thread.CurrentThread.CurrentUICulture;
 	private readonly Dictionary<CultureInfo, ISingleCultureDictionary> _dictionaries = [];
+	private readonly List<PropertyChangedEventHandler?> _propertyChangedHandlers = [];
 
 	#endregion Fields
 
@@ -29,14 +61,14 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	private TranslationCoreBindingSource()
 	{ }
 
+	public void Dispose()
+	{
+		Reset();
+		GC.SuppressFinalize(this);
+	}
+
 	public static TranslationCoreBindingSource Instance
 		{ get; private set; } = new TranslationCoreBindingSource();
-
-	internal static void ResetInstance()
-	{
-		Instance.Reset();
-		Instance = new TranslationCoreBindingSource();
-	}
 
 	#endregion Construction
 
@@ -95,6 +127,14 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	#endregion ILocalizationCore
 
 	//-----------------------------------------------------------------------------------------------------------------
+	#region Private Methods
+
+	[GeneratedRegex(@"%([^%]+)%")]
+	private static partial Regex MatchPlaceholderRegEx();
+
+	#endregion Private Methods
+
+	//-----------------------------------------------------------------------------------------------------------------
 	#region Public Methods
 
 	public string GetTranslation(string key, bool parsePlaceholders)
@@ -129,8 +169,15 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	/// <remarks>Call this method to reinitialize localization data, typically after changing available cultures or
 	/// updating resource dictionaries. Property change notifications allow data-bound UI elements to refresh their
 	/// displayed values accordingly.</remarks>
-	internal void Reset()
+	private void Reset()
 	{
+		//--- remove all property changed handlers ---
+		foreach (PropertyChangedEventHandler? handler in _propertyChangedHandlers)
+			_propertyChanged -= handler;
+
+		_propertyChangedHandlers.Clear();
+
+		//--- reset dictionaries and cultures ---
 		_dictionaries.Clear();
 		RaisePropertyChanged(nameof(SupportedCultures));
 
@@ -146,13 +193,26 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	//-----------------------------------------------------------------------------------------------------------------
 	#region INotifyPropertyChanged
 
-	public event PropertyChangedEventHandler? PropertyChanged;
+	[SuppressMessage("Style", "IDE1006:Benennungsstile", Justification = "Behaves like a field here")]
+	private event PropertyChangedEventHandler? _propertyChanged;
+
+	//--- track handler so they can be removed when Disposing/Resetting ---
+	public event PropertyChangedEventHandler? PropertyChanged
+		{
+		add
+		{
+			_propertyChanged += value;
+			_propertyChangedHandlers.Add(value);
+		}
+		remove
+		{
+			_propertyChanged -= value;
+			_ = _propertyChangedHandlers.Remove(value);
+		}
+	}
 
 	public void RaisePropertyChanged([CallerMemberName] string propertyName = "")
-		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-	[GeneratedRegex(@"%([^%]+)%")]
-	private static partial Regex MatchPlaceholderRegEx();
+		=> _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 	#endregion INotifyPropertyChanged
 }

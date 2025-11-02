@@ -8,9 +8,22 @@ using ErikForwerk.Localization.WPF.Models;
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection(nameof(TranslationCoreBindingSource))]
-public sealed class LocalizationTextConverterTests
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
+public sealed class LocalizationTextConverterTests :IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Test Cleanup
+
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
+
+	public void Dispose()
+	{
+		_testModetracker.Dispose();
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion Test Cleanup
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Data
 

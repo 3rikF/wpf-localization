@@ -11,7 +11,13 @@ namespace ErikForwerk.Localization.WPF.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 public sealed class LocalizationExtension : MarkupExtension
-{
+{//-----------------------------------------------------------------------------------------------------------------
+	#region Fields
+
+	private static readonly LocalizationDynamicTextConverter SHARED_DYNAMIC_CONVERTER = new();
+
+	#endregion Fields
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Construction
 
@@ -116,7 +122,7 @@ public sealed class LocalizationExtension : MarkupExtension
 				Bindings				= { keyBinding, translationBinding}
 				, Mode					= BindingMode.OneWay
 				//--- des Pudels Kern ---
-				, Converter				= new LocalizationDynamicTextConverter()
+				, Converter				= SHARED_DYNAMIC_CONVERTER
 				, ConverterParameter	= new PlaceholderConverterParameter(keyBinding.Path?.Path, ParsePlaceholders)
 			};
 

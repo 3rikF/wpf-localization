@@ -1,8 +1,11 @@
 ﻿
 using ErikForwerk.Localization.WPF.Models;
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Tests.Models;
 
+//-----------------------------------------------------------------------------------------------------------------------------------------
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public sealed class PlaceholderConverterParameterTests
 {
 	[Fact]

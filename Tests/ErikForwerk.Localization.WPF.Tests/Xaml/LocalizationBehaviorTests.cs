@@ -15,9 +15,21 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("STA")]
-public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTestBase(toh)
+public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTestBase(toh), IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Test Cleanup
+
+	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
+
+	public void Dispose()
+	{
+		_testModetracker.Dispose();
+		GC.SuppressFinalize(this);
+	}
+
+	#endregion Test Cleanup
+
 	//-------------------------------------------------------------------------------------------------------------
 	#region Test Helper
 
@@ -100,7 +112,6 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	[STAFact]
 	public void MemoryLeak_MultipleLoadUnload_ShouldNotLeakMemory()
 	{
-		TranslationCoreBindingSource.ResetInstance();
 		RunOnSTAThread(() =>
 		{
 			//--- ARRANGE ---------------------------------------------------------
@@ -145,7 +156,6 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	[STAFact]
 	public void OnSyncLanguageChanged_Deactivation_ShouldPreventFurtherLanguageUpdates()
 	{
-		TranslationCoreBindingSource.ResetInstance();
 		RunOnSTAThread(() =>
 		{
 			//--- ARRANGE ---------------------------------------------------------
@@ -172,9 +182,6 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	public void OnSyncLanguageChanged_NonFrameworkElement_ShouldDoNothing()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-
-
-		TranslationCoreBindingSource.ResetInstance();
 		RunOnSTAThread(() =>
 		{
 			DependencyObject obj = new();

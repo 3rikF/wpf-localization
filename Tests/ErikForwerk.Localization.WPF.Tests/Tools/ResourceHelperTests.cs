@@ -39,7 +39,6 @@ public sealed class ResourceHelperTests
 		_testConsole = TestConsole;
 	}
 
-
 	//-----------------------------------------------------------------------------------------------------------------
 	#region GetResourceText
 

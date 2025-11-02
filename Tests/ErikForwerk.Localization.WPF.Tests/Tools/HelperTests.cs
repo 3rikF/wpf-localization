@@ -1,4 +1,5 @@
-﻿using ErikForwerk.Localization.WPF.Tools;
+﻿
+using ErikForwerk.Localization.WPF.Tools;
 
 using Xunit.Abstractions;
 
