@@ -77,9 +77,6 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			//--- ACT -------------------------------------------------------------
 			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
 
-			//--- update is done asynchronously, so we need to wait a bit --
-			await Task.Delay(50); // wait for async updates to complete
-
 			//--- ASSERT ----------------------------------------------------------
 			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
 			Assert.Equal(langName, textBlock2.Language.IetfLanguageTag);
