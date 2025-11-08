@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
+using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.Localization.WPF.Xaml;
 using ErikForwerk.TestAbstractions.STA.Models;
 
@@ -38,8 +39,8 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 		FieldInfo privateInternalDictionary = typeof(LocalizationBehavior)
 			.GetField("HANDLERS", BindingFlags.NonPublic | BindingFlags.Static)!;
 
-		IDictionary<FrameworkElement, PropertyChangedEventHandler> handlers =
-			(IDictionary<FrameworkElement, PropertyChangedEventHandler>)privateInternalDictionary.GetValue(null)!;
+		Dictionary<FrameworkElement, ITranslationChanged.LocalizationChangedHandler> handlers =
+			(Dictionary<FrameworkElement, ITranslationChanged.LocalizationChangedHandler>)privateInternalDictionary.GetValue(null)!;
 
 		return handlers.Count;
 	}
@@ -53,7 +54,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	[InlineData("jp-ja")]
 	public void RealWorldScenario_ComplexUITree_ShouldSynchronizeAllElements(string langName)
 	{
-		RunOnSTAThread(() =>
+		RunOnSTAThread(async () =>
 		{
 			//--- ARRANGE ---------------------------------------------------------
 			Window window			= new();
@@ -75,6 +76,9 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 
 			//--- ACT -------------------------------------------------------------
 			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
+
+			//--- update is done asynchronously, so we need to wait a bit --
+			await Task.Delay(50); // wait for async updates to complete
 
 			//--- ASSERT ----------------------------------------------------------
 			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
@@ -112,7 +116,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	[STAFact]
 	public void MemoryLeak_MultipleLoadUnload_ShouldNotLeakMemory()
 	{
-		RunOnSTAThread(() =>
+		RunOnSTAThread(async () =>
 		{
 			//--- ARRANGE ---------------------------------------------------------
 			List<WeakReference> elements = [];
@@ -133,6 +137,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			GC.Collect();
 			TestConsole.WriteLine("Garbage Collection executed.");
 
+			await Task.Delay(100); // wait a bit to ensure finalizers have run
 
 			//--- ASSERT ----------------------------------------------------------
 			int aliveCount = elements.Count(wr => wr.IsAlive);
@@ -219,6 +224,10 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			LocalizationBehavior.SetSyncLanguage(element, false);
 			LocalizationBehavior.SetSyncLanguage(element, false); // repeat deactivation
 			int afterRepeatDeactivationCount	= LocalizationBehavior_GetHandlerCount();
+
+			TestConsole.WriteLine($"Original handler count:          [{originalHandlerElements}]");
+			TestConsole.WriteLine($"After repeat activation count:   [{afterRepeatActivationCount}]");
+			TestConsole.WriteLine($"After repeat deactivation count: [{afterRepeatDeactivationCount}]");
 
 			//--- ASSERT ------------------------------------------------------
 			Assert.Equal(originalHandlerElements + 1, afterRepeatActivationCount);

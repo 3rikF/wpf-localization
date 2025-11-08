@@ -1,10 +1,11 @@
 ﻿
-// ignore spelling: jp laceholders
+// ignore spelling: jp laceholders uut
 
 using System.ComponentModel;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
+using ErikForwerk.Localization.WPF.Enums;
 using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.TestAbstractions.Models;
 
@@ -14,6 +15,27 @@ using Xunit.Abstractions;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
+
+//--- TODO: When switching to .NEt10, replace this with static extension mehtod ---
+static file class AssertHelper
+{
+	public static void UpdateCalled(ITranslationChanged uut, ELocalizationChanges expectedChanges, Action action)
+	{
+		bool callbackCalled = false;
+
+		uut.RegisterCallback(
+			p =>
+			{
+				Assert.Equal(expectedChanges, p);
+				callbackCalled = true;
+			});
+
+		action();
+
+		Assert.True(callbackCalled);
+	}
+}
+
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
@@ -96,12 +118,18 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
-		Assert.PropertyChanged(
+		AssertHelper.UpdateCalled(
 			uut
-			, nameof(TranslationCoreBindingSource.LocalizedText)
+			, ELocalizationChanges.CurrentCulture
 			, () => uut.CurrentCulture = newCulture);
 
+		//Assert.PropertyChanged(
+		//	uut
+		//	, nameof(TranslationCoreBindingSource.LocalizedText)
+		//	, () => uut.CurrentCulture = newCulture);
+
 		//--- ASSERT -----------------------------------------------------
+		//Assert.True(updateCalled);
 		Assert.Equal(newCulture, uut.CurrentCulture);
 		Assert.Equal(newCulture, Thread.CurrentThread.CurrentUICulture);
 	}
@@ -113,7 +141,8 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		CultureInfo ci						= new("fr-FR");
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 		uut.CurrentCulture					= ci;
-		uut.PropertyChanged					+= FailTest;
+		//uut.PropertyChanged				+= FailTest;
+		uut.RegisterCallback(FailTest);
 
 		//--- we manually reset [Thread.CurrentThread.CurrentUICulture] to prove that it does not get changed again. ---
 		Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
@@ -126,7 +155,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		Assert.NotEqual(ci, Thread.CurrentThread.CurrentUICulture);
 
 		//--- otherwise the clean-up would trigger the trap ---
-		uut.PropertyChanged -= FailTest;
+		//uut.PropertyChanged -= FailTest;
 	}
 
 	#endregion CurrentCulture
@@ -181,14 +210,18 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		//--- ARRANGE ---------------------------------------------------
 		CultureInfo testCulture					= new("de-DE");
 		Mock<ISingleCultureDictionary> mockDict	= new();
-		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
+		_ = mockDict
+			.SetupGet(m => m.Culture)
+			.Returns(testCulture);
 
 		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
+		//--- ensure, that the dictionary-culture is NOT the current culture ---
+		uut.CurrentCulture						= new("fr-FR");
 
 		//--- ACT & ASSERT -----------------------------------------------
-		Assert.PropertyChanged(
+		AssertHelper.UpdateCalled(
 			uut
-			, nameof(TranslationCoreBindingSource.SupportedCultures)
+			, ELocalizationChanges.SupportedCultures
 			, () => uut.AddTranslations(mockDict.Object));
 	}
 
@@ -205,12 +238,13 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		_ = mockDict.SetupGet(m => m.Culture).Returns(testCulture);
 
 		TranslationCoreBindingSource uut		= TranslationCoreBindingSource.Instance;
+		//--- ensure, that the dictionary-culture is also the current culture ---
+		uut.CurrentCulture						= testCulture;
 
 		//--- ACT & ASSERT -----------------------------------------------
-		uut.CurrentCulture						= testCulture;  //--- ensure, that the dictionary-culture is also the current culture ---
-		Assert.PropertyChanged(
+		AssertHelper.UpdateCalled(
 			uut
-			, nameof(TranslationCoreBindingSource.LocalizedText)
+			, ELocalizationChanges.Translations | ELocalizationChanges.SupportedCultures
 			, () => uut.AddTranslations(mockDict.Object));
 	}
 
@@ -231,9 +265,14 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture						= testCulture;
 
 		//--- ACT & ASSERT -----------------------------------------------
-		Assert.PropertyChanged(
+		//Assert.PropertyChanged(
+		//	uut
+		//	, nameof(TranslationCoreBindingSource.LocalizedText)
+		//	, () => uut.AddTranslations(mockDict2.Object));
+
+		AssertHelper.UpdateCalled(
 			uut
-			, nameof(TranslationCoreBindingSource.LocalizedText)
+			, ELocalizationChanges.Translations
 			, () => uut.AddTranslations(mockDict2.Object));
 	}
 
@@ -242,16 +281,16 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	/// will not raise [PropertyChanged] for [SupportedCultures] because no new culture was added.
 	/// </summary>
 	[Theory]
-	[InlineData("de-DE", "de-DE", "de-DE", new string[] {"LocalizedText"})]
-	[InlineData("en-US", "en-US", "en-US", new string[] {"LocalizedText"})]
-	[InlineData("fr-FR", "fr-FR", "fr-FR", new string[] {"LocalizedText"})]
-	[InlineData("de-DE", "es-ES", "de-DE", new string[] {"LocalizedText", "SupportedCultures"})]
-	[InlineData("en-US", "es-ES", "en-US", new string[] {"LocalizedText", "SupportedCultures"})]
-	[InlineData("fr-FR", "es-ES", "fr-FR", new string[] {"LocalizedText", "SupportedCultures"})]
+	[InlineData("de-DE", "de-DE", "de-DE", new string[] {"Translations"})]
+	[InlineData("en-US", "en-US", "en-US", new string[] {"Translations"})]
+	[InlineData("fr-FR", "fr-FR", "fr-FR", new string[] {"Translations"})]
+	[InlineData("de-DE", "es-ES", "de-DE", new string[] {"Translations, SupportedCultures"})]
+	[InlineData("en-US", "es-ES", "en-US", new string[] {"Translations, SupportedCultures"})]
+	[InlineData("fr-FR", "es-ES", "fr-FR", new string[] {"Translations, SupportedCultures"})]
 
-	[InlineData("jp-JA", "de-DE", "de-DE", new string[] {})]
-	[InlineData("jp-JA", "en-US", "en-US", new string[] {})]
-	[InlineData("jp-JA", "fr-FR", "fr-FR", new string[] {})]
+	[InlineData("jp-JA", "de-DE", "de-DE", new string[] {"None"})]
+	[InlineData("jp-JA", "en-US", "en-US", new string[] {"None"})]
+	[InlineData("jp-JA", "fr-FR", "fr-FR", new string[] {"None"})]
 
 	[InlineData("jp-JA", "es-ES", "de-DE", new string[] {"SupportedCultures"})]
 	[InlineData("jp-JA", "es-ES", "en-US", new string[] {"SupportedCultures"})]
@@ -282,7 +321,12 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 		//--- ARRANGE ---------------------------------------------------------
 		HashSet<string?> actualPropertyUpdates	= [];
-		void logPropertyChange(object? s, PropertyChangedEventArgs a) => _ = actualPropertyUpdates.Add(a.PropertyName);
+		//void logPropertyChange(object? s, PropertyChangedEventArgs a) => _ = actualPropertyUpdates.Add(a.PropertyName);
+		void logPropertyChange(ELocalizationChanges changes)
+		{
+			TestConsole.WriteLine($"PropertyChanged: [{changes}]");
+			_ = actualPropertyUpdates.Add(changes.ToString());
+		}
 
 		CultureInfo currentCulture			= CultureInfo.CreateSpecificCulture(currentCultureName);
 		CultureInfo firstCulture			= CultureInfo.CreateSpecificCulture(firstDictCultureName);
@@ -302,27 +346,20 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture		= currentCulture;
 
 		//--- subscribe to property changed events to log what properties have been updated ---
-		uut.PropertyChanged		+= logPropertyChange;
+		//uut.PropertyChanged		+= logPropertyChange;
+		uut.RegisterCallback(logPropertyChange); //--- will be cleaned up on test teardown ---
 
 		//--- ACT -------------------------------------------------------------
-		try
-		{
-			//--- add second dictionary, this is where we expect (or not expect) property changed events ---
-			uut.AddTranslations(mockDict2.Object);
-		}
-		finally
-		{
-			//--- CLEANUP -----------------------------------------------------
-			uut.PropertyChanged		-= logPropertyChange;
-		}
+		//--- add second dictionary, this is where we expect (or not expect) property changed events ---
+		uut.AddTranslations(mockDict2.Object);
 
-		TestConsole.WriteLine($"Expected property updates: [{string.Join("], [", expectedPropertyUpdates.Order())}]");
-		TestConsole.WriteLine($"Actual property updates:   [{string.Join("], [", actualPropertyUpdates.Order())}]");
+		TestConsole.WriteLine($"Expected property updates: [{string.Join("], [", expectedPropertyUpdates)}]");
+		TestConsole.WriteLine($"Actual property updates:   [{string.Join("], [", actualPropertyUpdates)}]");
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(
-			expectedPropertyUpdates.Order()
-			, actualPropertyUpdates.Order());
+			expectedPropertyUpdates
+			, actualPropertyUpdates);
 	}
 
 	#endregion AddTranslations
@@ -439,18 +476,20 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	{
 		//--- ARRANGE ---------------------------------------------------
 		// create a fresh test instance and subscribe handlers
-		using TranslationCoreBindingSource.TestModeTracker tracker = new();
-		TranslationCoreBindingSource uut = TranslationCoreBindingSource.Instance;
+		using TranslationCoreBindingSource.TestModeTracker tracker	= new();
+		TranslationCoreBindingSource uut							= TranslationCoreBindingSource.Instance;
 
 		int calls = 0;
-		PropertyChangedEventHandler handler = (s, a) => calls++;
+		void fnHandler(ELocalizationChanges _) => calls++;
 
-		uut.PropertyChanged += handler;
-		uut.PropertyChanged += handler;
+		uut.CurrentCulture = CultureInfo.CreateSpecificCulture("de-DE");
+		uut.RegisterCallback(fnHandler);
+		uut.RegisterCallback(fnHandler);
 
-		// sanity: handlers are called
-		uut.RaisePropertyChanged(nameof(TranslationCoreBindingSource.LocalizedText));
-		Assert.Equal(2, calls);
+		//--- ACT -------------------------------------------------------
+		// check: handlers are called
+		uut.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+		Assert.Equal(1, calls);
 
 		//--- ACT -------------------------------------------------------
 		// disposing the tracker will call Reset() on the test instance
@@ -458,8 +497,9 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 		//--- ASSERT ----------------------------------------------------
 		// handlers must no longer be invoked after reset
-		uut.RaisePropertyChanged(nameof(TranslationCoreBindingSource.LocalizedText));
-		Assert.Equal(2, calls);
+		uut.CurrentCulture = CultureInfo.InvariantCulture;
+		uut.CurrentCulture = CultureInfo.CreateSpecificCulture("fr-FR");
+		Assert.Equal(1, calls);
 	}
 
 	#endregion Reset
