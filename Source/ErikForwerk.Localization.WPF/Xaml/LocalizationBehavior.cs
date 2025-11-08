@@ -1,9 +1,11 @@
-using System.ComponentModel;
+
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
+using ErikForwerk.Localization.WPF.Enums;
+using ErikForwerk.Localization.WPF.Interfaces;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Xaml;
@@ -14,6 +16,9 @@ namespace ErikForwerk.Localization.WPF.Xaml;
 /// </summary>
 public static class LocalizationBehavior
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Fields
+
 	/// <summary>
 	/// Stores a mapping between framework elements and their associated property changed event handlers.
 	/// </summary>
@@ -21,7 +26,12 @@ public static class LocalizationBehavior
 	/// This dictionary is used to track event handler registrations for property changes on specific framework elements.
 	/// It enables efficient management of event subscriptions, such as adding or removing handlers as needed.
 	/// </remarks>
-	private static readonly Dictionary<FrameworkElement, PropertyChangedEventHandler> HANDLERS = [];
+	private static readonly Dictionary<FrameworkElement, ITranslationChanged.LocalizationChangedHandler> HANDLERS = [];
+
+	#endregion Fields
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region SyncLanguage Dependency Property
 
 	/// <summary>
 	/// Attached property that enables automatic synchronization of the element's Language property
@@ -40,6 +50,37 @@ public static class LocalizationBehavior
 	public static void SetSyncLanguage(DependencyObject obj, bool value)
 		=> obj.SetValue(SyncLanguageProperty, value);
 
+	#endregion SyncLanguage Dependency Property
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region SyncDelay Dependency Property
+
+	/// <summary>
+	/// Identifies the SyncDelay attached dependency property.
+	/// Values are of type int and represent the delay in milliseconds
+	/// before synchronizing the <see cref="Window.Language"/> property after a culture change."/>
+	/// </summary>
+	/// <remarks>This field is used to register the SyncDelay attached property with the WPF property system. You
+	/// typically use this identifier when calling methods such as SetValue or GetValue on elements that support the
+	/// SyncDelay property.</remarks>
+	public static DependencyProperty SyncDelayProperty { get; } =
+		DependencyProperty.RegisterAttached(
+			"SyncDelay",
+			typeof(int),
+			typeof(LocalizationBehavior),
+			new PropertyMetadata(0));
+
+	public static int GetSyncDelay(DependencyObject obj)
+		=> (int)obj.GetValue(SyncDelayProperty);
+
+	public static void SetSyncDelay(DependencyObject obj, int value)
+		=> obj.SetValue(SyncDelayProperty, value);
+
+	#endregion SyncDelay Dependency Property
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Methods
+
 	private static void OnSyncLanguageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 	{
 		if (d is not FrameworkElement element)
@@ -53,16 +94,16 @@ public static class LocalizationBehavior
 			//	return;
 
 			//--- initial update ---
-			UpdateElementLanguage(element);
+			UpdateElementLanguageDelayed(element);
 
-			void fnCultureChangedHandler(object? sender, PropertyChangedEventArgs args)
+			void fnCultureChangedHandler(ELocalizationChanges changes)
 			{
-				if (args.PropertyName == nameof(TranslationCoreBindingSource.CurrentCulture))
-					UpdateElementLanguage(element);
+				if (changes.HasFlag(ELocalizationChanges.CurrentCulture))
+					UpdateElementLanguageDelayed(element);
 			}
 
 			HANDLERS[element] = fnCultureChangedHandler;
-			TranslationCoreBindingSource.Instance.PropertyChanged += fnCultureChangedHandler;
+			TranslationCoreBindingSource.Instance.RegisterCallback(fnCultureChangedHandler);
 
 			//--- clean-up on unload ---
 			element.Unloaded += OnElementUnloaded;
@@ -104,9 +145,9 @@ public static class LocalizationBehavior
 	/// <param name="element">The framework element whose culture changed event handler should be unsubscribed. Must not be null.</param>
 	private static void UnsubscribeCultureChangedHandler(FrameworkElement element)
 	{
-		if (HANDLERS.TryGetValue(element, out PropertyChangedEventHandler? handler))
+		if(HANDLERS.TryGetValue(element, out ITranslationChanged.LocalizationChangedHandler? handler))
 		{
-			TranslationCoreBindingSource.Instance.PropertyChanged -= handler;
+			TranslationCoreBindingSource.Instance.UnregisterCallback(handler);
 			_ = HANDLERS.Remove(element);
 		}
 	}
@@ -120,10 +161,32 @@ public static class LocalizationBehavior
 	/// Ensure that the element is not null before calling this method.
 	/// </remarks>
 	/// <param name="element">The FrameworkElement whose Language property will be updated to reflect the current culture. Cannot be null.</param>
-	private static void UpdateElementLanguage(FrameworkElement element)
+	private static async void UpdateElementLanguageDelayed(FrameworkElement element)
 	{
-		CultureInfo culture = TranslationCoreBindingSource.Instance.CurrentCulture;
-		element.Language = XmlLanguage.GetLanguage(culture.IetfLanguageTag);
+		int delay = GetSyncDelay(element);
+
+		if (delay <= 0)
+			await UpdateElementLanguage(element);
+
+		else
+		{
+			//--- Vorfreude ist die schönste Freude ---
+			//--- therefore we await twice ---
+			await await Task
+				.Delay(delay, CancellationToken.None)
+				.ContinueWith(_ => UpdateElementLanguage(element));
+		}
+	}
+
+	private static async Task UpdateElementLanguage(FrameworkElement element)
+	{
+		await element
+			.Dispatcher
+			.InvokeAsync(() =>
+			{
+				CultureInfo culture	= TranslationCoreBindingSource.Instance.CurrentCulture;
+				element.Language	= XmlLanguage.GetLanguage(culture.IetfLanguageTag);
+			});
 	}
 
 	/// <summary>
@@ -145,4 +208,6 @@ public static class LocalizationBehavior
 
 		HANDLERS.Clear();
 	}
+
+	#endregion Methods
 }
