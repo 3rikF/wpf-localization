@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
@@ -78,7 +79,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
 
 			// wait a bit to ensure async updates have completed
-			//await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
 			//--- ASSERT ----------------------------------------------------------
 			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
@@ -138,7 +139,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TestConsole.WriteLine("Garbage Collection executed.");
 
 			// wait a bit to ensure async updates have completed
-			//await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
 			//--- ASSERT ----------------------------------------------------------
 			int aliveCount = elements.Count(wr => wr.IsAlive);

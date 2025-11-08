@@ -141,7 +141,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		CultureInfo ci						= new("fr-FR");
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 		uut.CurrentCulture					= ci;
-		//uut.PropertyChanged				+= FailTest;
 		uut.RegisterCallback(FailTest);
 
 		//--- we manually reset [Thread.CurrentThread.CurrentUICulture] to prove that it does not get changed again. ---
@@ -155,7 +154,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		Assert.NotEqual(ci, Thread.CurrentThread.CurrentUICulture);
 
 		//--- otherwise the clean-up would trigger the trap ---
-		//uut.PropertyChanged -= FailTest;
+		uut.UnregisterCallback(FailTest);
 	}
 
 	#endregion CurrentCulture
