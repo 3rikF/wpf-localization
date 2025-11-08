@@ -1,10 +1,9 @@
 
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
+using ErikForwerk.Localization.WPF.Enums;
 using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.Localization.WPF.Tools;
 
@@ -12,11 +11,19 @@ using ErikForwerk.Localization.WPF.Tools;
 namespace ErikForwerk.Localization.WPF.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChanged, ILocalizationCore, IDisposable
+internal sealed partial class TranslationCoreBindingSource : ITranslationChanged, ILocalizationCore, IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Nested Types
 
+	/// <summary>
+	/// Provides a mechanism to temporarily replace the current <see cref="TranslationCoreBindingSource"/>
+	/// instance for testing purposes. Restores the original instance when disposed.
+	/// </summary>
+	/// <remarks>
+	/// Use this class to isolate changes to the <see cref="TranslationCoreBindingSource"/> during test execution.
+	/// Upon disposal, the original instance is restored to ensure test isolation and prevent side effects.
+	/// </remarks>
 	internal sealed class TestModeTracker : IDisposable
 	{
 		//-----------------------------------------------------------------------------------------------------------------
@@ -43,6 +50,7 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 
 		#endregion Construction
 	}
+
 	#endregion Nested Types
 
 	//-----------------------------------------------------------------------------------------------------------------
@@ -51,7 +59,6 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	private readonly CultureInfo _originalThreadCulture = Thread.CurrentThread.CurrentUICulture;
 	private CultureInfo _currentCulture = Thread.CurrentThread.CurrentUICulture;
 	private readonly Dictionary<CultureInfo, ISingleCultureDictionary> _dictionaries = [];
-	private readonly List<PropertyChangedEventHandler?> _propertyChangedHandlers = [];
 
 	#endregion Fields
 
@@ -97,8 +104,7 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 
 			_currentCulture = value;
 			Thread.CurrentThread.CurrentUICulture = value;
-			RaisePropertyChanged();
-			RaisePropertyChanged(nameof(LocalizedText));
+			RaiseLocalizationChanged(ELocalizationChanges.CurrentCulture);
 		}
 	}
 
@@ -108,20 +114,27 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	public void AddTranslations(ISingleCultureDictionary dictionary)
 	{
 		ArgumentNullException.ThrowIfNull(dictionary);
+		ELocalizationChanges changes = ELocalizationChanges.None;
 
 		//--- Merge dictionaries if culture already exists ---
 		if (_dictionaries.TryGetValue(dictionary.Culture, out ISingleCultureDictionary? existingDictionary))
 			existingDictionary.AddOrUpdate(dictionary);
 
+		//--- add completely new dictionary ---
 		else
 		{
 			_dictionaries[dictionary.Culture] = dictionary;
-			RaisePropertyChanged(nameof(SupportedCultures));	//--- a new culture has been added: update supported cultures ---
+
+			//--- a new culture has been added: update supported cultures ---
+			changes |= ELocalizationChanges.SupportedCultures;
 		}
 
-		//--- translations have been added or changed: update all bindings ---
+		//--- the current culture has been added/updated: update localized text ---
 		if (dictionary.Culture.Equals(_currentCulture))
-			RaisePropertyChanged(nameof(LocalizedText));
+			changes |= ELocalizationChanges.Translations;
+
+		//--- translations have been added or changed: update all bindings ---
+		RaiseLocalizationChanged(changes);
 	}
 
 	#endregion ILocalizationCore
@@ -172,47 +185,37 @@ internal sealed partial class TranslationCoreBindingSource : INotifyPropertyChan
 	private void Reset()
 	{
 		//--- remove all property changed handlers ---
-		foreach (PropertyChangedEventHandler? handler in _propertyChangedHandlers)
-			_propertyChanged -= handler;
-
-		_propertyChangedHandlers.Clear();
+		_translationChangedHandlers.Clear();
 
 		//--- reset dictionaries and cultures ---
 		_dictionaries.Clear();
-		RaisePropertyChanged(nameof(SupportedCultures));
 
 		_currentCulture							= _originalThreadCulture;
-		RaisePropertyChanged(nameof(CurrentCulture));
-		RaisePropertyChanged(nameof(LocalizedText));
 
 		Thread.CurrentThread.CurrentUICulture	= _originalThreadCulture;
+
+		RaiseLocalizationChanged(ELocalizationChanges.All);
 	}
+
 
 	#endregion Public Methods
 
 	//-----------------------------------------------------------------------------------------------------------------
 	#region INotifyPropertyChanged
 
-	[SuppressMessage("Style", "IDE1006:Benennungsstile", Justification = "Behaves like a field here")]
-	private event PropertyChangedEventHandler? _propertyChanged;
+	private readonly HashSet<ITranslationChanged.LocalizationChangedHandler> _translationChangedHandlers = [];
 
-	//--- track handler so they can be removed when Disposing/Resetting ---
-	public event PropertyChangedEventHandler? PropertyChanged
-		{
-		add
-		{
-			_propertyChanged += value;
-			_propertyChangedHandlers.Add(value);
-		}
-		remove
-		{
-			_propertyChanged -= value;
-			_ = _propertyChangedHandlers.Remove(value);
-		}
+	public void RegisterCallback(ITranslationChanged.LocalizationChangedHandler callback)
+		=> _translationChangedHandlers.Add(callback);
+
+	public void UnregisterCallback(ITranslationChanged.LocalizationChangedHandler callback)
+		=> _translationChangedHandlers.Remove(callback);
+
+	private void RaiseLocalizationChanged(ELocalizationChanges changes)
+	{
+		foreach (ITranslationChanged.LocalizationChangedHandler handler in _translationChangedHandlers)
+			handler(changes);
 	}
-
-	public void RaisePropertyChanged([CallerMemberName] string propertyName = "")
-		=> _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 	#endregion INotifyPropertyChanged
 }
