@@ -36,7 +36,6 @@ static file class AssertHelper
 	}
 }
 
-
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper), IDisposable
@@ -123,13 +122,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 			, ELocalizationChanges.CurrentCulture
 			, () => uut.CurrentCulture = newCulture);
 
-		//Assert.PropertyChanged(
-		//	uut
-		//	, nameof(TranslationCoreBindingSource.LocalizedText)
-		//	, () => uut.CurrentCulture = newCulture);
-
 		//--- ASSERT -----------------------------------------------------
-		//Assert.True(updateCalled);
 		Assert.Equal(newCulture, uut.CurrentCulture);
 		Assert.Equal(newCulture, Thread.CurrentThread.CurrentUICulture);
 	}
@@ -178,7 +171,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	public void AddTranslations_ValidData_AddAndUpdateTranslations()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo ci							= CultureInfo.CreateSpecificCulture("de-DE");
+		CultureInfo ci = CultureInfo.CreateSpecificCulture("de-DE");
 
 		//--- the first dictionary is added ---
 		Mock<ISingleCultureDictionary> mockDict1= new();
@@ -264,11 +257,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture						= testCulture;
 
 		//--- ACT & ASSERT -----------------------------------------------
-		//Assert.PropertyChanged(
-		//	uut
-		//	, nameof(TranslationCoreBindingSource.LocalizedText)
-		//	, () => uut.AddTranslations(mockDict2.Object));
-
 		AssertHelper.UpdateCalled(
 			uut
 			, ELocalizationChanges.Translations
@@ -320,7 +308,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 		//--- ARRANGE ---------------------------------------------------------
 		HashSet<string?> actualPropertyUpdates	= [];
-		//void logPropertyChange(object? s, PropertyChangedEventArgs a) => _ = actualPropertyUpdates.Add(a.PropertyName);
 		void logPropertyChange(ELocalizationChanges changes)
 		{
 			TestConsole.WriteLine($"PropertyChanged: [{changes}]");
@@ -345,7 +332,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture		= currentCulture;
 
 		//--- subscribe to property changed events to log what properties have been updated ---
-		//uut.PropertyChanged		+= logPropertyChange;
 		uut.RegisterCallback(logPropertyChange); //--- will be cleaned up on test teardown ---
 
 		//--- ACT -------------------------------------------------------------
