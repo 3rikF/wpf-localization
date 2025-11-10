@@ -8,10 +8,13 @@ using ErikForwerk.Localization.WPF.Xaml;
 
 using Moq;
 
+using static ErikForwerk.Localization.WPF.CoreLogic.TranslationCoreBindingSource;
+
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
+[Collection("STA Collection")]
 public sealed class LocalizationExtensionTests : IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
