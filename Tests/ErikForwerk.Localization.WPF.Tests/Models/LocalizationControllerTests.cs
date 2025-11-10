@@ -1,5 +1,7 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Windows;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
@@ -18,6 +20,25 @@ public sealed class LocalizationControllerTests: IDisposable
 	#region Test Cleanup
 
 	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
+
+
+	[ExcludeFromCodeCoverage(Justification = "Untestable race condition at test run time")]
+	public LocalizationControllerTests()
+	{
+		//--- initialize WPF Application if not already done ---
+		if (Application.Current is null)
+		{
+			try
+			{
+				_ = new Application();
+			}
+			catch
+			{
+				// Ignore exceptions during WPF initialization in test environments
+			}
+		}
+	}
+
 
 	public void Dispose()
 	{
@@ -202,8 +223,6 @@ public sealed class LocalizationControllerTests: IDisposable
 		const string RESOURCE_PATH = @"TestResources/TestTranslations.de-DE.csv";
 
 		//--- ACT -------------------------------------------------------------
-		Thread.CurrentThread.CurrentCulture		= CultureInfo.InvariantCulture;
-		Thread.CurrentThread.CurrentUICulture	= CultureInfo.InvariantCulture;
 		uut.AddTranslationsFromCsvResource(RESOURCE_PATH);
 
 		//--- ASSERT ----------------------------------------------------------
