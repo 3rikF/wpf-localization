@@ -14,7 +14,7 @@ using static ErikForwerk.Localization.WPF.CoreLogic.TranslationCoreBindingSource
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("STA Collection")]
+[Collection("FD66CE39-05A8-4268-A3A6-35367A96F252")]
 public sealed class LocalizationExtensionTests : IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------

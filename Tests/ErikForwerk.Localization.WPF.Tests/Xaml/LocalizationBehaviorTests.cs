@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("STA Collection")]
+[Collection("6A3623A2-96FD-4909-BF97-C13D3E7C9D63")]
 public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTestBase(toh), IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
