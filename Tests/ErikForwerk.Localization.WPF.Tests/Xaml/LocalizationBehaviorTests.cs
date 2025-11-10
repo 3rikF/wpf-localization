@@ -94,7 +94,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void ZZGetSyncLanguage_ReturnsSetValue(bool expectedValue)
+	public void GetSyncLanguage_ReturnsSetValue(bool expectedValue)
 	{
 		RunOnSTAThread(() =>
 		{
@@ -111,7 +111,26 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TestConsole.WriteLine($"[✔️ PASSED] GetSyncLanguage returned expected value: [{expectedValue}]");
 		}
 		, () => LocalizationBehavior.CleanUp());
+	}
 
+	[Theory]
+	[InlineData(0)]
+	[InlineData(100)]
+	[InlineData(500)]
+	public void GetSyncDelay_ReturnsSetValue(int expectedValue)
+	{
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			TextBlock element = new();
+			LocalizationBehavior.SetSyncDelay(element, expectedValue);
+			//--- ACT -------------------------------------------------------------
+			int actualValue = LocalizationBehavior.GetSyncDelay(element);
+			//--- ASSERT ----------------------------------------------------------
+			Assert.Equal(expectedValue, actualValue);
+			TestConsole.WriteLine($"[✔️ PASSED] GetSyncDelay returned expected value: [{expectedValue}]");
+		}
+		, () => LocalizationBehavior.CleanUp());
 	}
 
 	[STAFact]
@@ -234,6 +253,26 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			//--- ASSERT ------------------------------------------------------
 			Assert.Equal(originalHandlerElements + 1, afterRepeatActivationCount);
 			Assert.Equal(originalHandlerElements, afterRepeatDeactivationCount);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STAFact]
+	public async Task UpdateElementLanguage_SetsLanguageToCurrentCulture()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		RunOnSTAThread(async () =>
+		{
+			// Arrange
+			FrameworkElement element	= new();
+			CultureInfo expectedCulture	= new("fr-FR");
+			TranslationCoreBindingSource.Instance.CurrentCulture = expectedCulture;
+
+			// Act
+			await LocalizationBehavior.UpdateElementLanguage(element);
+
+			// Assert
+			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}

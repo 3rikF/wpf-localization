@@ -2,10 +2,13 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
+using System.Runtime.CompilerServices;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Enums;
 using ErikForwerk.Localization.WPF.Interfaces;
+
+[assembly: InternalsVisibleTo("ErikForwerk.Localization.WPF.Tests")]
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Xaml;
@@ -178,7 +181,7 @@ public static class LocalizationBehavior
 		}
 	}
 
-	private static async Task UpdateElementLanguage(FrameworkElement element)
+	internal static async Task UpdateElementLanguage(FrameworkElement element)
 	{
 		await element
 			.Dispatcher
