@@ -26,18 +26,33 @@ public static class ResourceHelper
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(resourcePath);
 
-		if (!resourcePath.StartsWith('/'))
-			resourcePath = resourcePath.Insert(0, "/");
+		resourcePath = resourcePath.TrimStart('/');
 
 		//--- Build Pack URI ---
 		string packUri = (assembly is null)
-			? $"pack://application:,,,{resourcePath}"
-			: $"pack://application:,,,/{assembly.GetName().Name};component{resourcePath}";
+			? $"pack://application:,,,/{resourcePath}"
+			: $"pack://application:,,,/{assembly.GetName().Name};component/{resourcePath}";
 
-		//--- Geht: Dateieigenschaft [Build-Vorgang = "Resource"] einstellen (standard) --------
-		Stream stream = Application.GetResourceStream(new Uri(packUri)).Stream;
+		try
+		{
+			//--- Geht: Dateieigenschaft [Build-Vorgang = "Resource"] einstellen (standard) --------
+			Console.WriteLine($"Loading resource at path [{resourcePath}] using Pack-URI [{packUri}]...");
+			Console.WriteLine($"Current Thread Culture:  [{Thread.CurrentThread.CurrentCulture.Name}]");
+			Console.WriteLine($"Current UI Culture:      [{Thread.CurrentThread.CurrentUICulture.Name}]");
 
-		using StreamReader reader = new(stream);
-		return reader.ReadToEnd();
+			Stream stream = Application.GetResourceStream(new Uri(packUri)).Stream;
+
+			using StreamReader reader = new(stream);
+			return reader.ReadToEnd();
+		}
+		catch (UriFormatException e)
+		{
+			//--- re-throw exception with the message containing the current thread- and UI Culture ---
+			throw new InvalidOperationException(
+				$"Failed to load resource at path [{resourcePath}]. "
+					+ $"Current Thread Culture: [{Thread.CurrentThread.CurrentCulture.Name}], "
+					+ $"Current UI Culture: [{Thread.CurrentThread.CurrentUICulture.Name}]."
+				, e);
+		}
 	}
 }

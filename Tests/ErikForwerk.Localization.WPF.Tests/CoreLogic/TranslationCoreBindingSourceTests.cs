@@ -36,7 +36,6 @@ static file class AssertHelper
 	}
 }
 
-
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper), IDisposable
@@ -111,10 +110,11 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	}
 
 	[Fact]
-	public void CurrentCulture_SetNewCulture_UpdatesThreadCurrentUICulture()
+	public void CurrentCulture_SetNewCulture_DoesNotChangeThreadCurrentUICulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
 		CultureInfo newCulture				= new("fr-FR");
+		CultureInfo originalCulture			= Thread.CurrentThread.CurrentUICulture;
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
@@ -123,15 +123,9 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 			, ELocalizationChanges.CurrentCulture
 			, () => uut.CurrentCulture = newCulture);
 
-		//Assert.PropertyChanged(
-		//	uut
-		//	, nameof(TranslationCoreBindingSource.LocalizedText)
-		//	, () => uut.CurrentCulture = newCulture);
-
 		//--- ASSERT -----------------------------------------------------
-		//Assert.True(updateCalled);
-		Assert.Equal(newCulture, uut.CurrentCulture);
-		Assert.Equal(newCulture, Thread.CurrentThread.CurrentUICulture);
+		Assert.Equal(newCulture,		uut.CurrentCulture);
+		Assert.Equal(originalCulture,	Thread.CurrentThread.CurrentUICulture);
 	}
 
 	[Fact]
@@ -141,7 +135,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		CultureInfo ci						= new("fr-FR");
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 		uut.CurrentCulture					= ci;
-		//uut.PropertyChanged				+= FailTest;
 		uut.RegisterCallback(FailTest);
 
 		//--- we manually reset [Thread.CurrentThread.CurrentUICulture] to prove that it does not get changed again. ---
@@ -155,7 +148,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		Assert.NotEqual(ci, Thread.CurrentThread.CurrentUICulture);
 
 		//--- otherwise the clean-up would trigger the trap ---
-		//uut.PropertyChanged -= FailTest;
+		uut.UnregisterCallback(FailTest);
 	}
 
 	#endregion CurrentCulture
@@ -179,7 +172,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	public void AddTranslations_ValidData_AddAndUpdateTranslations()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo ci							= CultureInfo.CreateSpecificCulture("de-DE");
+		CultureInfo ci = CultureInfo.CreateSpecificCulture("de-DE");
 
 		//--- the first dictionary is added ---
 		Mock<ISingleCultureDictionary> mockDict1= new();
@@ -265,11 +258,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture						= testCulture;
 
 		//--- ACT & ASSERT -----------------------------------------------
-		//Assert.PropertyChanged(
-		//	uut
-		//	, nameof(TranslationCoreBindingSource.LocalizedText)
-		//	, () => uut.AddTranslations(mockDict2.Object));
-
 		AssertHelper.UpdateCalled(
 			uut
 			, ELocalizationChanges.Translations
@@ -321,7 +309,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 		//--- ARRANGE ---------------------------------------------------------
 		HashSet<string?> actualPropertyUpdates	= [];
-		//void logPropertyChange(object? s, PropertyChangedEventArgs a) => _ = actualPropertyUpdates.Add(a.PropertyName);
 		void logPropertyChange(ELocalizationChanges changes)
 		{
 			TestConsole.WriteLine($"PropertyChanged: [{changes}]");
@@ -346,7 +333,6 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		uut.CurrentCulture		= currentCulture;
 
 		//--- subscribe to property changed events to log what properties have been updated ---
-		//uut.PropertyChanged		+= logPropertyChange;
 		uut.RegisterCallback(logPropertyChange); //--- will be cleaned up on test teardown ---
 
 		//--- ACT -------------------------------------------------------------

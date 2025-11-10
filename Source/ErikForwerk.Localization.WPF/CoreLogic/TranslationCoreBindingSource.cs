@@ -56,8 +56,8 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
 
-	private readonly CultureInfo _originalThreadCulture = Thread.CurrentThread.CurrentUICulture;
-	private CultureInfo _currentCulture = Thread.CurrentThread.CurrentUICulture;
+	private readonly CultureInfo _originalThreadUICulture	= Thread.CurrentThread.CurrentUICulture;
+	private CultureInfo _currentCulture						= Thread.CurrentThread.CurrentUICulture;
 	private readonly Dictionary<CultureInfo, ISingleCultureDictionary> _dictionaries = [];
 
 	#endregion Fields
@@ -103,7 +103,7 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 				return;
 
 			_currentCulture = value;
-			Thread.CurrentThread.CurrentUICulture = value;
+			//Thread.CurrentThread.CurrentUICulture = value;
 			RaiseLocalizationChanged(ELocalizationChanges.CurrentCulture);
 		}
 	}
@@ -190,9 +190,8 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 		//--- reset dictionaries and cultures ---
 		_dictionaries.Clear();
 
-		_currentCulture							= _originalThreadCulture;
-
-		Thread.CurrentThread.CurrentUICulture	= _originalThreadCulture;
+		_currentCulture							= _originalThreadUICulture;
+		//Thread.CurrentThread.CurrentUICulture	= _originalThreadCulture;
 
 		RaiseLocalizationChanged(ELocalizationChanges.All);
 	}

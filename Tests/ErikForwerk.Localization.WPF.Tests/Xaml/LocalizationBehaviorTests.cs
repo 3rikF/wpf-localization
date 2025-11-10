@@ -3,6 +3,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Windows.Threading;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
@@ -15,7 +17,7 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.Xaml;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-[Collection("STA Collection")]
+[Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTestBase(toh), IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
@@ -70,6 +72,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			_ = grid.Children.Add(stackPanel);
 			window.Content = grid;
 
+
 			LocalizationBehavior.SetSyncLanguage(textBlock1, true);
 			LocalizationBehavior.SetSyncLanguage(textBlock2, true);
 			LocalizationBehavior.SetSyncLanguage(button, true);
@@ -78,7 +81,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
 
 			// wait a bit to ensure async updates have completed
-			//await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
 			//--- ASSERT ----------------------------------------------------------
 			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
@@ -90,10 +93,71 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 		, () => LocalizationBehavior.CleanUp());
 	}
 
+	[STATheory]
+	[InlineData("en-us")]
+	[InlineData("de-de")]
+	[InlineData("jp-ja")]
+	public void RealWorldScenario_ComplexUITreeWithDelay_ShouldSynchronizeAfterDelay(string langName)
+	{
+		RunOnSTAThread(async () =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			Window window			= new();
+			Grid grid				= new();
+			StackPanel stackPanel	= new();
+			TextBlock textBlock1	= new();
+			TextBlock textBlock2	= new();
+			Button button			= new();
+
+			_ = stackPanel.Children.Add(textBlock1);
+			_ = stackPanel.Children.Add(textBlock2);
+			_ = stackPanel.Children.Add(button);
+			_ = grid.Children.Add(stackPanel);
+			window.Content = grid;
+
+			string initialLanguage	= CultureInfo.InvariantCulture.IetfLanguageTag;
+			textBlock1.Language		= XmlLanguage.GetLanguage(initialLanguage);
+			textBlock2.Language		= XmlLanguage.GetLanguage(initialLanguage);
+			button.Language			= XmlLanguage.GetLanguage(initialLanguage);
+
+			LocalizationBehavior.SetSyncLanguage(textBlock1, true);
+			LocalizationBehavior.SetSyncLanguage(textBlock2, true);
+			LocalizationBehavior.SetSyncLanguage(button, true);
+			LocalizationBehavior.SetSyncDelay(textBlock1, 100);
+			LocalizationBehavior.SetSyncDelay(textBlock2, 100);
+			LocalizationBehavior.SetSyncDelay(button, 100);
+
+			//--- ACT -------------------------------------------------------------
+			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
+
+			// wait a bit to ensure dispatcher has processed
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+			//--- ASSERT (immediately) --------------------------------------------
+			Assert.Equal(initialLanguage, textBlock1.Language.IetfLanguageTag);
+			Assert.Equal(initialLanguage, textBlock2.Language.IetfLanguageTag);
+			Assert.Equal(initialLanguage, button.Language.IetfLanguageTag);
+
+			TestConsole.WriteLine("[✔️ PASSED] Elements NOT synchronized immediately (delay active).");
+
+			// wait for delay to complete (100ms delay + 10ms buffer)
+			await Task.Delay(110);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+			//--- ASSERT (after delay) --------------------------------------------
+			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
+			Assert.Equal(langName, textBlock2.Language.IetfLanguageTag);
+			Assert.Equal(langName, button.Language.IetfLanguageTag);
+
+			TestConsole.WriteLine("[✔️ PASSED] All elements synchronized correctly after delay.");
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void ZZGetSyncLanguage_ReturnsSetValue(bool expectedValue)
+	public void GetSyncLanguage_ReturnsSetValue(bool expectedValue)
 	{
 		RunOnSTAThread(() =>
 		{
@@ -110,7 +174,26 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TestConsole.WriteLine($"[✔️ PASSED] GetSyncLanguage returned expected value: [{expectedValue}]");
 		}
 		, () => LocalizationBehavior.CleanUp());
+	}
 
+	[Theory]
+	[InlineData(0)]
+	[InlineData(100)]
+	[InlineData(500)]
+	public void GetSyncDelay_ReturnsSetValue(int expectedValue)
+	{
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			TextBlock element = new();
+			LocalizationBehavior.SetSyncDelay(element, expectedValue);
+			//--- ACT -------------------------------------------------------------
+			int actualValue = LocalizationBehavior.GetSyncDelay(element);
+			//--- ASSERT ----------------------------------------------------------
+			Assert.Equal(expectedValue, actualValue);
+			TestConsole.WriteLine($"[✔️ PASSED] GetSyncDelay returned expected value: [{expectedValue}]");
+		}
+		, () => LocalizationBehavior.CleanUp());
 	}
 
 	[STAFact]
@@ -138,7 +221,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			TestConsole.WriteLine("Garbage Collection executed.");
 
 			// wait a bit to ensure async updates have completed
-			//await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
 			//--- ASSERT ----------------------------------------------------------
 			int aliveCount = elements.Count(wr => wr.IsAlive);
@@ -233,6 +316,50 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			//--- ASSERT ------------------------------------------------------
 			Assert.Equal(originalHandlerElements + 1, afterRepeatActivationCount);
 			Assert.Equal(originalHandlerElements, afterRepeatDeactivationCount);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STAFact]
+	public async Task UpdateElementLanguageAsync_SetsLanguageToCurrentCulture()
+	{
+		RunOnSTAThread(async () =>
+		{
+			//--- ARRANGE -----------------------------------------------------
+			FrameworkElement element	= new();
+			CultureInfo expectedCulture	= new("fr-FR");
+			TranslationCoreBindingSource.Instance.CurrentCulture = expectedCulture;
+
+			//--- if this is set from the beginning, this test would be pointless ---
+			Assert.NotEqual(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
+
+			//--- ACT ---------------------------------------------------------
+			await LocalizationBehavior.UpdateElementLanguageAsync(element);
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag, true);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STAFact]
+	public void UpdateElementLanguage_SetsLanguageToCurrentCulture()
+	{
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE -----------------------------------------------------
+			FrameworkElement element	= new();
+			CultureInfo expectedCulture	= new("fr-FR");
+			TranslationCoreBindingSource.Instance.CurrentCulture = expectedCulture;
+
+			//--- if this is set from the beginning, this test would be pointless ---
+			Assert.NotEqual(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
+
+			//--- ACT ---------------------------------------------------------
+			LocalizationBehavior.UpdateElementLanguage(element);
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag, true);
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}
