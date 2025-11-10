@@ -97,12 +97,12 @@ public static class LocalizationBehavior
 			//	return;
 
 			//--- initial update ---
-			UpdateElementLanguageDelayed(element);
+			UpdateElementLanguageDelayedAsync(element);
 
 			void fnCultureChangedHandler(ELocalizationChanges changes)
 			{
 				if (changes.HasFlag(ELocalizationChanges.CurrentCulture))
-					UpdateElementLanguageDelayed(element);
+					UpdateElementLanguageDelayedAsync(element);
 			}
 
 			HANDLERS[element] = fnCultureChangedHandler;
@@ -164,12 +164,12 @@ public static class LocalizationBehavior
 	/// Ensure that the element is not null before calling this method.
 	/// </remarks>
 	/// <param name="element">The FrameworkElement whose Language property will be updated to reflect the current culture. Cannot be null.</param>
-	private static async void UpdateElementLanguageDelayed(FrameworkElement element)
+	private static async void UpdateElementLanguageDelayedAsync(FrameworkElement element)
 	{
 		int delay = GetSyncDelay(element);
 
 		if (delay <= 0)
-			await UpdateElementLanguage(element);
+			await UpdateElementLanguageAsync(element);
 
 		else
 		{
@@ -177,19 +177,21 @@ public static class LocalizationBehavior
 			//--- therefore we await twice ---
 			await await Task
 				.Delay(delay, CancellationToken.None)
-				.ContinueWith(_ => UpdateElementLanguage(element));
+				.ContinueWith(_ => UpdateElementLanguageAsync(element));
 		}
 	}
 
-	internal static async Task UpdateElementLanguage(FrameworkElement element)
+	internal static async Task UpdateElementLanguageAsync(FrameworkElement element)
 	{
 		await element
 			.Dispatcher
-			.InvokeAsync(() =>
-			{
-				CultureInfo culture	= TranslationCoreBindingSource.Instance.CurrentCulture;
-				element.Language	= XmlLanguage.GetLanguage(culture.IetfLanguageTag);
-			});
+			.InvokeAsync(() => UpdateElementLanguage(element));
+	}
+
+	internal static void UpdateElementLanguage(FrameworkElement element)
+	{
+		CultureInfo culture	= TranslationCoreBindingSource.Instance.CurrentCulture;
+		element.Language	= XmlLanguage.GetLanguage(culture.IetfLanguageTag);
 	}
 
 	/// <summary>

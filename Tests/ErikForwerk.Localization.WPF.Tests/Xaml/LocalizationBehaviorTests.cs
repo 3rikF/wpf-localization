@@ -258,21 +258,45 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	}
 
 	[STAFact]
-	public async Task UpdateElementLanguage_SetsLanguageToCurrentCulture()
+	public async Task UpdateElementLanguageAsync_SetsLanguageToCurrentCulture()
 	{
-		//--- ARRANGE ---------------------------------------------------------
 		RunOnSTAThread(async () =>
 		{
-			// Arrange
+			//--- ARRANGE -----------------------------------------------------
 			FrameworkElement element	= new();
 			CultureInfo expectedCulture	= new("fr-FR");
 			TranslationCoreBindingSource.Instance.CurrentCulture = expectedCulture;
 
-			// Act
-			await LocalizationBehavior.UpdateElementLanguage(element);
+			//--- if this is set from the beginning, this test would be pointless ---
+			Assert.NotEqual(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
 
-			// Assert
-			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
+			//--- ACT ---------------------------------------------------------
+			await LocalizationBehavior.UpdateElementLanguageAsync(element);
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag, true);
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STAFact]
+	public void UpdateElementLanguage_SetsLanguageToCurrentCulture()
+	{
+		RunOnSTAThread(() =>
+		{
+			//--- ARRANGE -----------------------------------------------------
+			FrameworkElement element	= new();
+			CultureInfo expectedCulture	= new("fr-FR");
+			TranslationCoreBindingSource.Instance.CurrentCulture = expectedCulture;
+
+			//--- if this is set from the beginning, this test would be pointless ---
+			Assert.NotEqual(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag);
+
+			//--- ACT ---------------------------------------------------------
+			LocalizationBehavior.UpdateElementLanguage(element);
+
+			//--- ASSERT ------------------------------------------------------
+			Assert.Equal(expectedCulture.IetfLanguageTag, element.Language.IetfLanguageTag, true);
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}
