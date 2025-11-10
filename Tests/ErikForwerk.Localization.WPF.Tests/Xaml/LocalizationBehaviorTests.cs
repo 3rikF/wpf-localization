@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 using System.Windows.Threading;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
@@ -71,6 +72,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			_ = grid.Children.Add(stackPanel);
 			window.Content = grid;
 
+
 			LocalizationBehavior.SetSyncLanguage(textBlock1, true);
 			LocalizationBehavior.SetSyncLanguage(textBlock2, true);
 			LocalizationBehavior.SetSyncLanguage(button, true);
@@ -87,6 +89,67 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 			Assert.Equal(langName, button.Language.IetfLanguageTag);
 
 			TestConsole.WriteLine("[✔️ PASSED] All elements synchronized correctly.");
+		}
+		, () => LocalizationBehavior.CleanUp());
+	}
+
+	[STATheory]
+	[InlineData("en-us")]
+	[InlineData("de-de")]
+	[InlineData("jp-ja")]
+	public void RealWorldScenario_ComplexUITreeWithDelay_ShouldSynchronizeAfterDelay(string langName)
+	{
+		RunOnSTAThread(async () =>
+		{
+			//--- ARRANGE ---------------------------------------------------------
+			Window window			= new();
+			Grid grid				= new();
+			StackPanel stackPanel	= new();
+			TextBlock textBlock1	= new();
+			TextBlock textBlock2	= new();
+			Button button			= new();
+
+			_ = stackPanel.Children.Add(textBlock1);
+			_ = stackPanel.Children.Add(textBlock2);
+			_ = stackPanel.Children.Add(button);
+			_ = grid.Children.Add(stackPanel);
+			window.Content = grid;
+
+			string initialLanguage	= CultureInfo.InvariantCulture.IetfLanguageTag;
+			textBlock1.Language		= XmlLanguage.GetLanguage(initialLanguage);
+			textBlock2.Language		= XmlLanguage.GetLanguage(initialLanguage);
+			button.Language			= XmlLanguage.GetLanguage(initialLanguage);
+
+			LocalizationBehavior.SetSyncLanguage(textBlock1, true);
+			LocalizationBehavior.SetSyncLanguage(textBlock2, true);
+			LocalizationBehavior.SetSyncLanguage(button, true);
+			LocalizationBehavior.SetSyncDelay(textBlock1, 100);
+			LocalizationBehavior.SetSyncDelay(textBlock2, 100);
+			LocalizationBehavior.SetSyncDelay(button, 100);
+
+			//--- ACT -------------------------------------------------------------
+			TranslationCoreBindingSource.Instance.CurrentCulture = new CultureInfo(langName);
+
+			// wait a bit to ensure dispatcher has processed
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+			//--- ASSERT (immediately) --------------------------------------------
+			Assert.Equal(initialLanguage, textBlock1.Language.IetfLanguageTag);
+			Assert.Equal(initialLanguage, textBlock2.Language.IetfLanguageTag);
+			Assert.Equal(initialLanguage, button.Language.IetfLanguageTag);
+
+			TestConsole.WriteLine("[✔️ PASSED] Elements NOT synchronized immediately (delay active).");
+
+			// wait for delay to complete (100ms delay + 10ms buffer)
+			await Task.Delay(110);
+			await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+			//--- ASSERT (after delay) --------------------------------------------
+			Assert.Equal(langName, textBlock1.Language.IetfLanguageTag);
+			Assert.Equal(langName, textBlock2.Language.IetfLanguageTag);
+			Assert.Equal(langName, button.Language.IetfLanguageTag);
+
+			TestConsole.WriteLine("[✔️ PASSED] All elements synchronized correctly after delay.");
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}
