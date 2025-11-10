@@ -26,17 +26,20 @@ public static class ResourceHelper
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(resourcePath);
 
-		if (!resourcePath.StartsWith('/'))
-			resourcePath = resourcePath.Insert(0, "/");
+		resourcePath = resourcePath.TrimStart('/');
 
 		//--- Build Pack URI ---
 		string packUri = (assembly is null)
-			? $"pack://application:,,,{resourcePath}"
-			: $"pack://application:,,,/{assembly.GetName().Name};component{resourcePath}";
+			? $"pack://application:,,,/{resourcePath}"
+			: $"pack://application:,,,/{assembly.GetName().Name};component/{resourcePath}";
 
 		try
 		{
 			//--- Geht: Dateieigenschaft [Build-Vorgang = "Resource"] einstellen (standard) --------
+			Console.WriteLine($"Loading resource at path [{resourcePath}] using Pack-URI [{packUri}]...");
+			Console.WriteLine($"Current Thread Culture:  [{Thread.CurrentThread.CurrentCulture.Name}]");
+			Console.WriteLine($"Current UI Culture:      [{Thread.CurrentThread.CurrentUICulture.Name}]");
+
 			Stream stream = Application.GetResourceStream(new Uri(packUri)).Stream;
 
 			using StreamReader reader = new(stream);
