@@ -34,10 +34,22 @@ public static class ResourceHelper
 			? $"pack://application:,,,{resourcePath}"
 			: $"pack://application:,,,/{assembly.GetName().Name};component{resourcePath}";
 
-		//--- Geht: Dateieigenschaft [Build-Vorgang = "Resource"] einstellen (standard) --------
-		Stream stream = Application.GetResourceStream(new Uri(packUri)).Stream;
+		try
+		{
+			//--- Geht: Dateieigenschaft [Build-Vorgang = "Resource"] einstellen (standard) --------
+			Stream stream = Application.GetResourceStream(new Uri(packUri)).Stream;
 
-		using StreamReader reader = new(stream);
-		return reader.ReadToEnd();
+			using StreamReader reader = new(stream);
+			return reader.ReadToEnd();
+		}
+		catch (UriFormatException e)
+		{
+			//--- re-throw exception with the message containing the current thread- and UI Culture ---
+			throw new InvalidOperationException(
+				$"Failed to load resource at path [{resourcePath}]. "
+					+ $"Current Thread Culture: [{Thread.CurrentThread.CurrentCulture.Name}], "
+					+ $"Current UI Culture: [{Thread.CurrentThread.CurrentUICulture.Name}]."
+				, e);
+		}
 	}
 }

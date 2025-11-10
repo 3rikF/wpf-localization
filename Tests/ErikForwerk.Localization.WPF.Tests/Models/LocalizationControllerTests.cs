@@ -199,9 +199,11 @@ public sealed class LocalizationControllerTests: IDisposable
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
-		const string RESOURCE_PATH		= @"TestResources/TestTranslations.de-DE.csv";
+		const string RESOURCE_PATH = @"TestResources/TestTranslations.de-DE.csv";
 
 		//--- ACT -------------------------------------------------------------
+		Thread.CurrentThread.CurrentCulture		= CultureInfo.InvariantCulture;
+		Thread.CurrentThread.CurrentUICulture	= CultureInfo.InvariantCulture;
 		uut.AddTranslationsFromCsvResource(RESOURCE_PATH);
 
 		//--- ASSERT ----------------------------------------------------------
