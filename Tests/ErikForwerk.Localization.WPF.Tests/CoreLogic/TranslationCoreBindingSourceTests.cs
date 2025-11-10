@@ -110,10 +110,11 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	}
 
 	[Fact]
-	public void CurrentCulture_SetNewCulture_UpdatesThreadCurrentUICulture()
+	public void CurrentCulture_SetNewCulture_DoesNotChangeThreadCurrentUICulture()
 	{
 		//--- ARRANGE ---------------------------------------------------
 		CultureInfo newCulture				= new("fr-FR");
+		CultureInfo originalCulture			= Thread.CurrentThread.CurrentUICulture;
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT -------------------------------------------------------
@@ -123,8 +124,8 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 			, () => uut.CurrentCulture = newCulture);
 
 		//--- ASSERT -----------------------------------------------------
-		Assert.Equal(newCulture, uut.CurrentCulture);
-		Assert.Equal(newCulture, Thread.CurrentThread.CurrentUICulture);
+		Assert.Equal(newCulture,		uut.CurrentCulture);
+		Assert.Equal(originalCulture,	Thread.CurrentThread.CurrentUICulture);
 	}
 
 	[Fact]
