@@ -160,12 +160,17 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 	public void AddTranslations_NullDictionary_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------
-		CultureInfo ci						= CultureInfo.CreateSpecificCulture("de-DE");
 		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
 
 		//--- ACT & ASSERT -----------------------------------------------
 		_ = Assert.Throws<ArgumentNullException>(
-			() => uut.AddTranslations(null!));
+			() => uut.AddTranslations((ISingleCultureDictionary)null!));
+
+		_ = Assert.Throws<ArgumentNullException>(
+			() => uut.AddTranslations((IEnumerable<ISingleCultureDictionary>)null!));
+
+		_ = Assert.Throws<ArgumentNullException>(
+			() => uut.AddTranslations((ILocalizationReader)null!));
 	}
 
 	[Fact]
@@ -195,6 +200,65 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		Assert.Contains(ci, uut.SupportedCultures);
 		mockDict1.VerifyAll();
 		mockDict2.VerifyAll();
+	}
+
+	[Fact]
+	public void AddTranslations_MultipleDictionaries_AddAndUpdateTranslations()
+	{
+		//--- ARRANGE ---------------------------------------------------
+		CultureInfo ci1 = CultureInfo.CreateSpecificCulture("de-DE");
+		CultureInfo ci2 = CultureInfo.CreateSpecificCulture("en-US");
+		//--- the first dictionary is added ---
+		Mock<ISingleCultureDictionary> mockDict1= new();
+		mockDict1.SetupGet(m => m.Culture).Returns(ci1).Verifiable(Times.AtLeastOnce());
+		mockDict1.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never());
+		//--- the second dictionary is added ---
+		Mock<ISingleCultureDictionary> mockDict2= new();
+		mockDict2.SetupGet(m => m.Culture).Returns(ci2).Verifiable(Times.AtLeastOnce());
+		mockDict2.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never());
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
+		//--- ACT -------------------------------------------------------
+		uut.AddTranslations([mockDict1.Object, mockDict2.Object]);
+
+		//--- ASSERT -----------------------------------------------------
+		Assert.Contains(ci1, uut.SupportedCultures);
+		Assert.Contains(ci2, uut.SupportedCultures);
+		mockDict1.VerifyAll();
+		mockDict2.VerifyAll();
+	}
+
+	[Fact]
+	public void AddTranslations_LocalizationReader_AddsAllDictionaries()
+	{
+		//--- ARRANGE ---------------------------------------------------
+		CultureInfo ci1 = CultureInfo.CreateSpecificCulture("de-DE");
+		CultureInfo ci2 = CultureInfo.CreateSpecificCulture("en-US");
+
+		//--- the first dictionary is added ---
+		Mock<ISingleCultureDictionary> mockDict1= new();
+		mockDict1.SetupGet(m => m.Culture).Returns(ci1).Verifiable(Times.AtLeastOnce());
+		mockDict1.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never());
+
+		//--- the second dictionary is added ---
+		Mock<ISingleCultureDictionary> mockDict2= new();
+		mockDict2.SetupGet(m => m.Culture).Returns(ci2).Verifiable(Times.AtLeastOnce());
+		mockDict2.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never());
+		Mock<ILocalizationReader> mockReader = new();
+		mockReader
+			.Setup(m => m.GetLocalizations())
+			.Returns([mockDict1.Object, mockDict2.Object])
+			.Verifiable(Times.Once());
+		TranslationCoreBindingSource uut	= TranslationCoreBindingSource.Instance;
+
+		//--- ACT -------------------------------------------------------
+		uut.AddTranslations(mockReader.Object);
+
+		//--- ASSERT -----------------------------------------------------
+		Assert.Contains(ci1, uut.SupportedCultures);
+		Assert.Contains(ci2, uut.SupportedCultures);
+		mockDict1.VerifyAll();
+		mockDict2.VerifyAll();
+		mockReader.VerifyAll();
 	}
 
 	[Fact]

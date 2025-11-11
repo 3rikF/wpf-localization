@@ -173,14 +173,13 @@ public sealed class LocalizationControllerTests: IDisposable
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
-		SingleCultureDictionary dictionary = new(TEST_CULTURE_DE);
-		dictionary.AddOrUpdate("Hello", "Hallo");
+		List<ISingleCultureDictionary> dictionaries = new();
 
 		//--- ACT -------------------------------------------------------------
-		uut.AddTranslations(dictionary);
+		uut.AddTranslations(dictionaries);
 
 		//--- ASSERT ----------------------------------------------------------
-		mockCore.Verify(x => x.AddTranslations(dictionary), Times.Once());
+		mockCore.Verify(x => x.AddTranslations(dictionaries), Times.Once());
 	}
 
 	[Fact] // ignore spelling: bonjour
@@ -207,6 +206,27 @@ public sealed class LocalizationControllerTests: IDisposable
 		mockCore.Verify(x => x.AddTranslations(dict2), Times.Once());
 	}
 
+	[Fact]
+	public void AddTranslations_ValidReader_DelegatesToCore()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		LocalizationController uut = CreateTestLocalizationController(
+			TEST_CULTURE_DE
+			, out Mock<ILocalizationCore>? mockCore);
+
+		Mock<ILocalizationReader> mockReader = new();
+		_ = mockReader
+			.Setup(x => x.GetLocalizations())
+			.Returns([]);
+
+		//--- ACT -------------------------------------------------------------
+		uut.AddTranslations(mockReader.Object);
+
+		//--- ASSERT ----------------------------------------------------------
+		mockCore.Verify(x => x.AddTranslations(mockReader.Object), Times.Once());
+	}
+
+
 	#endregion AddTranslations Method
 
 	//-----------------------------------------------------------------------------------------------------------------
@@ -226,7 +246,7 @@ public sealed class LocalizationControllerTests: IDisposable
 		uut.AddTranslationsFromCsvResource(RESOURCE_PATH);
 
 		//--- ASSERT ----------------------------------------------------------
-		mockCore.Verify(x => x.AddTranslations(It.IsAny<ISingleCultureDictionary>()), Times.AtLeastOnce());
+		mockCore.Verify(x => x.AddTranslations(It.IsAny<ILocalizationReader>()), Times.AtLeastOnce());
 	}
 
 	#endregion AddTranslationsFromCsvResource Method

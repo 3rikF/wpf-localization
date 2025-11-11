@@ -1,4 +1,4 @@
-﻿using System.CodeDom;
+﻿
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -188,26 +188,6 @@ public sealed class RessourceCsvReaderTests
 		Assert.Contains(expectedMessagePart, ex.Message);
 		_testConsole.WriteLine($"[✔️ Passed] FileFormatException thrown for non-existent resource.");
 	}
-
-	//[Fact]
-	//public void GetLocalizations_ValidResource_TranslationsAreAddedToDictionary()
-	//{
-	//	//--- ARRANGE ---------------------------------------------------------
-	//	const string RESOURCE_PATH	= "/TestResources/TestTranslations.de-DE.csv";
-	//	const int MIN_EXPECTED_KEYS	= 2;
-	//
-	//	RessourceCsvReader uut = new(RESOURCE_PATH, Assembly.GetExecutingAssembly());
-	//
-	//	_testConsole.WriteLine($"Testing path: [{RESOURCE_PATH}]");
-	//
-	//	//--- ACT -------------------------------------------------------------
-	//	ISingleCultureDictionary[]		localizations	= uut.GetLocalizations();
-	//	IReadOnlyDictionary<string, string>	allTranslations	= localizations[0].GetAllTranslations();
-	//
-	//	//--- ASSERT ----------------------------------------------------------
-	//	Assert.True(allTranslations.Count >= MIN_EXPECTED_KEYS);
-	//	_testConsole.WriteLine($"[✔️ Passed] Dictionary contains [{allTranslations.Count}] translations.");
-	//}
 
 	[Theory]
 	[InlineData("/TestResources/TestTranslations.de-DE.csv",	"TestKey3")]

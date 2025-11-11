@@ -12,4 +12,8 @@ public interface ILocalizationCore
 		{ get; }
 
 	void AddTranslations(ISingleCultureDictionary dictionary);
+
+	void AddTranslations(IEnumerable<ISingleCultureDictionary> dictionaries);
+
+	void AddTranslations(ILocalizationReader reader);
 }
