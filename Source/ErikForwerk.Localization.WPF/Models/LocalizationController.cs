@@ -69,13 +69,14 @@ public sealed class LocalizationController : ILocalizationCore
 	public void AddTranslations(ISingleCultureDictionary dictionary)
 		=> _localizationCore.AddTranslations(dictionary);
 
-	public void AddTranslationsFromCsvResource(string resourcePath)
-	{
-		RessourceCsvReader reader = new(resourcePath, Assembly.GetCallingAssembly());
+	public void AddTranslations(IEnumerable<ISingleCultureDictionary> dictionaries)
+		=> _localizationCore.AddTranslations(dictionaries);
 
-		foreach (ISingleCultureDictionary dict in reader.GetLocalizations())
-			_localizationCore.AddTranslations(dict);
-	}
+	public void AddTranslations(ILocalizationReader reader)
+		=> _localizationCore.AddTranslations(reader);
+
+	public void AddTranslationsFromCsvResource(string resourcePath)
+		=> AddTranslations(new RessourceCsvReader(resourcePath, Assembly.GetCallingAssembly()));
 
 	#endregion Public Methods
 }

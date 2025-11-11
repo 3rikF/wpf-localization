@@ -111,30 +111,43 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	public IEnumerable<CultureInfo> SupportedCultures
 		=> _dictionaries.Keys;
 
-	public void AddTranslations(ISingleCultureDictionary dictionary)
+	public void AddTranslations(IEnumerable<ISingleCultureDictionary> dictionaries)
 	{
-		ArgumentNullException.ThrowIfNull(dictionary);
+		ArgumentNullException.ThrowIfNull(dictionaries);
 		ELocalizationChanges changes = ELocalizationChanges.None;
 
-		//--- Merge dictionaries if culture already exists ---
-		if (_dictionaries.TryGetValue(dictionary.Culture, out ISingleCultureDictionary? existingDictionary))
-			existingDictionary.AddOrUpdate(dictionary);
-
-		//--- add completely new dictionary ---
-		else
+		//--- process all dictionaries ---
+		foreach (ISingleCultureDictionary dictionary in dictionaries)
 		{
-			_dictionaries[dictionary.Culture] = dictionary;
+			ArgumentNullException.ThrowIfNull(dictionary);
 
-			//--- a new culture has been added: update supported cultures ---
-			changes |= ELocalizationChanges.SupportedCultures;
+			//--- Merge dictionaries if culture already exists ---
+			if (_dictionaries.TryGetValue(dictionary.Culture, out ISingleCultureDictionary? existingDictionary))
+				existingDictionary.AddOrUpdate(dictionary);
+			//--- add completely new dictionary ---
+			else
+			{
+				_dictionaries[dictionary.Culture] = dictionary;
+				//--- a new culture has been added: update supported cultures ---
+				changes |= ELocalizationChanges.SupportedCultures;
+			}
+			//--- the current culture has been added/updated: update localized text ---
+			if (dictionary.Culture.Equals(_currentCulture))
+				changes |= ELocalizationChanges.Translations;
 		}
-
-		//--- the current culture has been added/updated: update localized text ---
-		if (dictionary.Culture.Equals(_currentCulture))
-			changes |= ELocalizationChanges.Translations;
 
 		//--- translations have been added or changed: update all bindings ---
 		RaiseLocalizationChanged(changes);
+	}
+
+
+	public void AddTranslations(ISingleCultureDictionary dictionary)
+		=> AddTranslations([dictionary]);
+
+	public void AddTranslations(ILocalizationReader reader)
+	{
+		ArgumentNullException.ThrowIfNull(reader);
+		AddTranslations(reader.GetLocalizations());
 	}
 
 	#endregion ILocalizationCore
