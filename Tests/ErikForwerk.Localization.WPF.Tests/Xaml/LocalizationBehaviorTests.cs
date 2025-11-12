@@ -321,7 +321,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	}
 
 	[STAFact]
-	public async Task UpdateElementLanguageAsync_SetsLanguageToCurrentCulture()
+	public void UpdateElementLanguageAsync_SetsLanguageToCurrentCulture()
 	{
 		RunOnSTAThread(async () =>
 		{
