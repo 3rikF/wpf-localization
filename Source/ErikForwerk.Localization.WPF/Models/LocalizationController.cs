@@ -76,7 +76,7 @@ public sealed class LocalizationController : ILocalizationCore
 		=> _localizationCore.AddTranslations(reader);
 
 	public void AddTranslationsFromCsvResource(string resourcePath)
-		=> AddTranslations(new RessourceCsvReader(resourcePath, Assembly.GetCallingAssembly()));
+		=> AddTranslations(new ResourceCsvReader(resourcePath, Assembly.GetCallingAssembly()));
 
 	#endregion Public Methods
 }

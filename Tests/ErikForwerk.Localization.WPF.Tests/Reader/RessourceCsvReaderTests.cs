@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace ErikForwerk.Localization.WPF.Tests.Reader;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-public sealed class RessourceCsvReaderTests
+public sealed class ResourceCsvReaderTests
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Construction
@@ -22,7 +22,7 @@ public sealed class RessourceCsvReaderTests
 	private readonly ITestOutputHelper _testConsole;
 
 	[ExcludeFromCodeCoverage(Justification = "Untestable race condition at test run time")]
-	private RessourceCsvReaderTests()
+	private ResourceCsvReaderTests()
 	{
 		_testConsole = null!;
 
@@ -40,7 +40,7 @@ public sealed class RessourceCsvReaderTests
 		}
 	}
 
-	public RessourceCsvReaderTests(ITestOutputHelper TestConsole)
+	public ResourceCsvReaderTests(ITestOutputHelper TestConsole)
 		: this()
 	{
 		_testConsole = TestConsole;
@@ -81,7 +81,7 @@ public sealed class RessourceCsvReaderTests
 	public void GetLocalizations_ValidResourcePath_ReturnsCorrectCultureAndContent(string resourcePath, string expectedCultureName)
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		RessourceCsvReader uut			= new(resourcePath, Assembly.GetExecutingAssembly());
+		ResourceCsvReader uut			= new(resourcePath, Assembly.GetExecutingAssembly());
 		CultureInfo		expectedCulture	= CultureInfo.GetCultureInfo(expectedCultureName);
 
 		_testConsole.WriteLine($"Testing path:     [{resourcePath}]");
@@ -103,7 +103,7 @@ public sealed class RessourceCsvReaderTests
 	public void GetLocalizations_ValidResourcePath_LoadsTranslations(string resourcePath, string expectedCultureName)
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		RessourceCsvReader			uut			= new(resourcePath, Assembly.GetExecutingAssembly());
+		ResourceCsvReader			uut			= new(resourcePath, Assembly.GetExecutingAssembly());
 		const string				TEST_KEY1	= "TestKey1";
 		const string				TEST_KEY2	= "TestKey2";
 
@@ -133,7 +133,7 @@ public sealed class RessourceCsvReaderTests
 		string expectedValue)
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		RessourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
+		ResourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
 
 		_testConsole.WriteLine($"Testing path:      [{resourcePath}]");
 		_testConsole.WriteLine($"Expected [{expectedKey}] => [{expectedValue}]");
@@ -155,7 +155,7 @@ public sealed class RessourceCsvReaderTests
 		const string RESOURCE_PATH			= "/TestResources/InvalidNoCulture.csv";
 		const string EXPECTED_MESSAGE_PART	= "IETF-language-tag";
 
-		RessourceCsvReader uut = new(RESOURCE_PATH);
+		ResourceCsvReader uut = new(RESOURCE_PATH);
 
 		_testConsole.WriteLine($"Testing path without culture: [{RESOURCE_PATH}]");
 
@@ -176,7 +176,7 @@ public sealed class RessourceCsvReaderTests
 		//--- ARRANGE ---------------------------------------------------------
 		string expectedMessagePart = resourcePath.TrimStart('/').ToLower();
 
-		RessourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
+		ResourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
 
 		_testConsole.WriteLine($"Testing non-existent path: [{resourcePath}]");
 
@@ -195,7 +195,7 @@ public sealed class RessourceCsvReaderTests
 	public void GetLocalizations_ResourceWithEscapedCharacters_ParsesCorrectly(string resourcePath, string keyWithEscapes)
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		RessourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
+		ResourceCsvReader uut = new(resourcePath, Assembly.GetExecutingAssembly());
 
 		_testConsole.WriteLine($"Testing path: [{resourcePath}]");
 		_testConsole.WriteLine($"Testing key:[{keyWithEscapes}]");
@@ -218,7 +218,7 @@ public sealed class RessourceCsvReaderTests
 		const string RESOURCE_PATH			= "/TestResources/EmptyFile.de-DE.csv";
 		const string EXPECTED_MESSAGE_PART	= "could not be found or is empty";
 
-		RessourceCsvReader uut = new(RESOURCE_PATH, Assembly.GetExecutingAssembly());
+		ResourceCsvReader uut = new(RESOURCE_PATH, Assembly.GetExecutingAssembly());
 		_testConsole.WriteLine($"Testing empty resource path: [{RESOURCE_PATH}]");
 
 		//--- ACT & ASSERT ----------------------------------------------------

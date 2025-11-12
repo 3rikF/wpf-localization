@@ -15,7 +15,7 @@ namespace ErikForwerk.Localization.WPF.Reader;
 /// <summary>
 /// Reader implementation for loading localization CSV files from embedded resources
 /// </summary>
-public sealed class RessourceCsvReader : ILocalizationReader
+public sealed class ResourceCsvReader : ILocalizationReader
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Fields
@@ -29,11 +29,17 @@ public sealed class RessourceCsvReader : ILocalizationReader
 	#region Constructor
 
 	/// <summary>
-	/// Creates a new RessourceCsvReader with the specified resource path prefix and supported cultures
+	/// Initializes a new instance of the <see cref="ResourceCsvReader"/> class for reading CSV data from an embedded resource.
 	/// </summary>
-	/// <param name="resourcePathPrefix">The path prefix to locate resources (e.g., "/Languages/")</param>
-	/// <param name="supportedCultureNames">Array of culture names that should be loaded (e.g., ["de-DE", "en-US", "ru-RU"])</param>
-	public RessourceCsvReader(string resourcePath, Assembly? assembly=null)
+	/// <param name="resourcePath">
+	/// The path to the embedded resource containing the CSV data.
+	/// This should be a fully qualified resource name within the assembly.
+	/// </param>
+	/// <param name="assembly">
+	/// The assembly in which to search for the embedded resource.
+	/// If null, the executing assembly is used.
+	/// </param>
+	public ResourceCsvReader(string resourcePath, Assembly? assembly=null)
 	{
 		_resourcePath	= resourcePath;
 		_assembly		= assembly;
