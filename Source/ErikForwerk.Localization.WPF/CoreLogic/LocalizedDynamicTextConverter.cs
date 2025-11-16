@@ -28,7 +28,14 @@ internal sealed class LocalizationDynamicTextConverter : IMultiValueConverter
 
 		else
 		{
-			string key				= values[0].ToString()!;
+			object value = values[0]!;
+
+			// If the bound value is already a string, use it directly as the key.
+			// For any other type, format the key as "TypeName.Value" (e.g. "Status.Active").
+			string key = value is string str
+				? str
+				: string.Format(CultureInfo.InvariantCulture, "{0}.{1}", value.GetType().Name, value);
+
 			bool parsePlaceholders	= converterParam?.ParsePlaceholders ?? false;
 			return TranslationCoreBindingSource.Instance.GetTranslation(key, parsePlaceholders);
 		}
