@@ -113,6 +113,36 @@
 				Text		="{loc:Localization {Binding SampleLangKey}}"
 				/>
 
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData.EnumValue}}"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData.StringValue}}"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData.IntValue}}"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData.DoubleValue}}"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData.BoolValue}}"
+				/>
+
+			<TextBlock
+				Margin		="10, 0, 0, 0"
+				Text		="{loc:Localization {Binding SampleData}}"
+				/>
+
 			<!-- ==== Example of missing translation  ========================================= -->
 			<TextBlock
 				Margin		="10, 10, 0, 0"

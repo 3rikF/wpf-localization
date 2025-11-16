@@ -11,3 +11,9 @@ Tab_1;Вкладка 1
 
 Content_1;Содержимое для вкладки 1\r\nÄÜÖßäöüß
 //Content_2;Содержимое для вкладки 2
+
+EExampleEnum.SecondValue;Перечисление номер два
+Int32.42;Сорок два
+Double.3.14;Пирог
+Boolean.True;Истина
+ExampleData.SecondValue-42;Трюк 17

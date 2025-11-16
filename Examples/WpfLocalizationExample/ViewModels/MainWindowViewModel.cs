@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+// ignore spelling: ru
+
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 using ErikForwerk.Localization.WPF.Models;
-using ErikForwerk.Localization.WPF.Tools;
 
+using WpfLocalizationExample.Models;
 using WpfLocalizationExample.ViewModels;
 
 namespace WpfLocalizationTest.ViewModels;
@@ -83,6 +83,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 			RaisePropertyChanged();
 		}
 	}
+
+	public ExampleData SampleData
+		{ get; } = new ExampleData();
+
+	public IEnumerable<ExampleTabItemViewModel> ExampleTabItems
+		{ get; } = [
+			new ExampleTabItemViewModel("Tab_1",	"Content_1")
+			, new ExampleTabItemViewModel("Tab_2",	"Content_2")
+		];
+
 	#endregion Properties
 
 	//-----------------------------------------------------------------------------------------------------------------
@@ -93,24 +103,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 	public void RaisePropertyChanged([CallerMemberName] string propertyName = "")
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-	protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
-	{
-		if (!Equals(field, newValue))
-		{
-			field = newValue;
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-			return true;
-		}
-
-		return false;
-	}
-
-
-	public IEnumerable<ExampleTabItemViewModel> ExampleTabItems
-		{ get; } = [
-			new ExampleTabItemViewModel("Tab_1",	"Content_1")
-			, new ExampleTabItemViewModel("Tab_2",	"Content_2")
-		];
+	//private bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+	//{
+	//	if (!Equals(field, newValue))
+	//	{
+	//		field = newValue;
+	//		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+	//		return true;
+	//	}
+	//
+	//	return false;
+	//}
 
 	#endregion INotifyPropertyChanged
 }

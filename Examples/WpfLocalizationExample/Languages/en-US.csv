@@ -11,3 +11,9 @@ Tab_1;Tab 1
 
 Content_1;Content for Tab 1\r\nÄÜÖßäöüß
 //Content_2;Content for Tab 2
+
+EExampleEnum.SecondValue;Enum Number Two
+Int32.42;Forty-Two
+Double.3.14;Pie
+Boolean.True;True
+ExampleData.SecondValue-42;Trick 17

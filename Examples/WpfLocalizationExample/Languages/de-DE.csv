@@ -11,3 +11,9 @@ Tab_1;Registerkarte 1
 
 Content_1;Inhalt für Registerkarte 1\r\nÄÜÖßäöüß
 //Content_2;Inhalt für Registerkarte 2
+
+EExampleEnum.SecondValue;Enum Nummer Zwei
+Int32.42;Zweiundvierzig
+Double.3.14;Kuchen
+Boolean.True;Wahr
+ExampleData.SecondValue-42;Trick 17
