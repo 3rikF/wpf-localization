@@ -11,7 +11,7 @@ A lightweight and easy-to-use localization framework for WPF/XAML applications t
 
 ## Table of Contents
 
-- [⚠️ Breaking Changes in v0.3.0](#️-breaking-changes-in-v030)
+- [⚠️ Breaking Changes in v0.3.0](#-breaking-changes-in-v030)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
