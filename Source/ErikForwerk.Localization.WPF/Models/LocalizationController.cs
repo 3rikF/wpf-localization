@@ -78,5 +78,11 @@ public sealed class LocalizationController : ILocalizationCore
 	public void AddTranslationsFromCsvResource(string resourcePath)
 		=> AddTranslations(new ResourceCsvReader(resourcePath, Assembly.GetCallingAssembly()));
 
+	public string GetTranslation(string key)
+		=> _localizationCore.GetTranslation(key);
+
+	public string GetTranslation(string key, bool parsePlaceholders)
+		=> _localizationCore.GetTranslation(key, parsePlaceholders);
+
 	#endregion Public Methods
 }

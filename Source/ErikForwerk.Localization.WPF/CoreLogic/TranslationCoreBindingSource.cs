@@ -163,6 +163,9 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Public Methods
 
+	public string GetTranslation(string key)
+		=> GetTranslation(key, parsePlaceholders: false);
+
 	public string GetTranslation(string key, bool parsePlaceholders)
 	{
 		if (string.IsNullOrEmpty(key))
