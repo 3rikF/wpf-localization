@@ -9,6 +9,21 @@ A lightweight and easy-to-use localization framework for WPF/XAML applications t
 [![wakatime](https://wakatime.com/badge/user/ccce5eac-49f0-481f-998c-1183a3cd0b18/project/6d16b00f-2c72-4608-9b1d-047225a31992.svg)](https://wakatime.com/badge/user/ccce5eac-49f0-481f-998c-1183a3cd0b18/project/6d16b00f-2c72-4608-9b1d-047225a31992) 
 [![NuGet](https://img.shields.io/nuget/v/ErikForwerk.Localization.WPF)](https://www.nuget.org/packages/ErikForwerk.Localization.WPF/) 
 
+## Table of Contents
+
+- [⚠️ Breaking Changes in v0.3.0](#warning-breaking-changes-in-v030)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [1. Create Translation Files](#1-create-translation-files)
+  - [2. Initialize LocalizationController](#2-initialize-localizationcontroller)
+  - [3. Use in XAML](#3-use-in-xaml)
+  - [4. Handling Missing Translations](#4-handling-missing-translations)
+- [Example Project](#example-project)
+- [Requirements](#requirements)
+- [License](#license)
+- [Contributing](#contributing)
+
 ## ⚠️ Breaking Changes in v0.3.0
 
 **Important:** If you are upgrading from v0.2.2 or earlier, please note the following breaking changes:
