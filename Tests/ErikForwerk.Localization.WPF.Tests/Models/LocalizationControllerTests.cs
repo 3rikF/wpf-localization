@@ -278,4 +278,57 @@ public sealed class LocalizationControllerTests: IDisposable
 	}
 
 	#endregion Integration Tests
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region GetTranslation Method
+
+	[Fact]
+	public void GetTranslation_WithKey_DelegatesToCore()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		const string TEST_KEY			= "TestKey";
+		const string EXPECTED_VALUE		= "TranslatedValue";
+
+		LocalizationController uut = CreateTestLocalizationController(
+			TEST_CULTURE_DE
+			, out Mock<ILocalizationCore> mockCore);
+
+		_ = mockCore
+			.Setup(x => x.GetTranslation(TEST_KEY))
+			.Returns(EXPECTED_VALUE);
+
+		//--- ACT -------------------------------------------------------------
+		string result = uut.GetTranslation(TEST_KEY);
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(EXPECTED_VALUE, result);
+		mockCore.Verify(x => x.GetTranslation(TEST_KEY), Times.Once());
+	}
+
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void GetTranslation_WithKeyAndParsePlaceholders_DelegatesToCore(bool parsePlaceholders)
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		const string TEST_KEY			= "TestKey";
+		const string EXPECTED_VALUE		= "TranslatedValue";
+
+		LocalizationController uut = CreateTestLocalizationController(
+			TEST_CULTURE_DE
+			, out Mock<ILocalizationCore> mockCore);
+
+		_ = mockCore
+			.Setup(x => x.GetTranslation(TEST_KEY, parsePlaceholders))
+			.Returns(EXPECTED_VALUE);
+
+		//--- ACT -------------------------------------------------------------
+		string result = uut.GetTranslation(TEST_KEY, parsePlaceholders);
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(EXPECTED_VALUE, result);
+		mockCore.Verify(x => x.GetTranslation(TEST_KEY, parsePlaceholders), Times.Once());
+	}
+
+	#endregion GetTranslation Method
 }

@@ -443,10 +443,12 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		const string EXPECTED_TRANSLATION	= "!!!NonExistentKey!!!";
 
 		//--- ACT -------------------------------------------------------
-		string result						= uut.GetTranslation(TEST_KEY, parsePlaceholders: false);
+		string resultA						= uut.GetTranslation(TEST_KEY, parsePlaceholders: false);
+		string resultB						= uut.GetTranslation(TEST_KEY);
 
 		//--- ASSERT -----------------------------------------------------
-		Assert.Equal(EXPECTED_TRANSLATION, result);
+		Assert.Equal(EXPECTED_TRANSLATION, resultA);
+		Assert.Equal(EXPECTED_TRANSLATION, resultB);
 	}
 
 	[Fact]
