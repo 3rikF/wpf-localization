@@ -2,6 +2,13 @@
 
 A lightweight and easy-to-use localization framework for WPF/XAML applications that enables runtime language switching with minimal configuration.
 
+## Current Status
+
+[![Current Repository Status](https://github.com/3rikF/wpf-localization/actions/workflows/dotnet_build-test-pack-publish.yml/badge.svg)](https://github.com/3rikF/wpf-localization/actions) 
+[![Codecov Test Coverage](https://codecov.io/gh/3rikF/wpf-localization/graph/badge.svg?token=6DBLGNQC73)](https://codecov.io/gh/3rikF/wpf-localization) 
+[![wakatime](https://wakatime.com/badge/user/ccce5eac-49f0-481f-998c-1183a3cd0b18/project/6d16b00f-2c72-4608-9b1d-047225a31992.svg)](https://wakatime.com/badge/user/ccce5eac-49f0-481f-998c-1183a3cd0b18/project/6d16b00f-2c72-4608-9b1d-047225a31992) 
+[![NuGet](https://img.shields.io/nuget/v/ErikForwerk.Localization.WPF)](https://www.nuget.org/packages/ErikForwerk.Localization.WPF/) 
+
 ## ⚠️ Breaking Changes in v0.3.0
 
 **Important:** If you are upgrading from v0.2.2 or earlier, please note the following breaking changes:
