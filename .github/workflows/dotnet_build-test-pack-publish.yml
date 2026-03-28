@@ -202,8 +202,9 @@ jobs:
       run: |
         if dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate; then
           echo "Published package: ${{ steps.pack.outputs.nupkg_path }}"
-          PACKAGE_NAME=$(basename "${{ steps.pack.outputs.nupkg_path }}" .nupkg)
-          echo "Check online status at: https://www.nuget.org/packages/${PACKAGE_NAME}/"
+          PACKAGE_NAME=$(basename "$PROJECT_PATH" .csproj)
+          PACKAGE_VERSION="${{ steps.version.outputs.version }}"
+          echo "Check online status at: https://www.nuget.org/packages/${PACKAGE_NAME}/${PACKAGE_VERSION}"
         else
           echo "::error::Failed to publish package: ${{ steps.pack.outputs.nupkg_path }}"
           exit 1
