@@ -196,8 +196,15 @@ jobs:
         # Setzt den exakten Pfad als Output
         echo "nupkg_path=$NUPKG_PATH" >> $GITHUB_OUTPUT
 
-    # Publish to NuGet.org
+    # Publish to NuGet (Fail-Safe)
     - name: Publish to NuGet (Fail-Safe)
       shell: bash
-      # Jetzt den exakten Pfad verwenden (Lösung A/B kombiniert)
-      run: dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: |
+        if dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate; then
+          echo "Published package: ${{ steps.pack.outputs.nupkg_path }}"
+          PACKAGE_NAME=$(basename "${{ steps.pack.outputs.nupkg_path }}" .nupkg)
+          echo "Check online status at: https://www.nuget.org/packages/${PACKAGE_NAME}/"
+        else
+          echo "::error::Failed to publish package: ${{ steps.pack.outputs.nupkg_path }}"
+          exit 1
+        fi
