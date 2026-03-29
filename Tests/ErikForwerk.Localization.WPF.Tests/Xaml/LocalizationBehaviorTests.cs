@@ -1,4 +1,6 @@
 ﻿
+// ignore spelling: jp
+
 using System.Globalization;
 using System.Reflection;
 using System.Windows;
@@ -49,11 +51,13 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 
 	#endregion Test Helper
 
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Test Methods
 
 	[STATheory]
-	[InlineData("en-us")]
-	[InlineData("de-de")]
-	[InlineData("jp-ja")]
+	[InlineData("en-US")]
+	[InlineData("de-DE")]
+	[InlineData("jp-JA")]
 	public void RealWorldScenario_ComplexUITree_ShouldSynchronizeAllElements(string langName)
 	{
 		RunOnSTAThread(async () =>
@@ -94,9 +98,9 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 	}
 
 	[STATheory]
-	[InlineData("en-us")]
-	[InlineData("de-de")]
-	[InlineData("jp-ja")]
+	[InlineData("en-US")]
+	[InlineData("de-DE")]
+	[InlineData("jp-JA")]
 	public void RealWorldScenario_ComplexUITreeWithDelay_ShouldSynchronizeAfterDelay(string langName)
 	{
 		RunOnSTAThread(async () =>
@@ -213,7 +217,7 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 				element.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
 			}
 
-			TestConsole.WriteLine($"Created elements:   [{elements.Count}]");
+			TestConsole.WriteLine($"Created elements    {B(elements.Count)}");
 
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
@@ -225,7 +229,8 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 
 			//--- ASSERT ----------------------------------------------------------
 			int aliveCount = elements.Count(wr => wr.IsAlive);
-			TestConsole.WriteLine($"Alive elements:     [{elements.Count(wr => wr.IsAlive)}]");
+			TestConsole.WriteLine($"Alive elements      {B(aliveCount)}");
+
 			Assert.True(aliveCount < 50, $"Too many objects still in memory: {aliveCount}");
 		}
 		, () => LocalizationBehavior.CleanUp());
@@ -363,4 +368,6 @@ public class LocalizationBehaviorIntegrationTests(ITestOutputHelper toh) : StaTe
 		}
 		, () => LocalizationBehavior.CleanUp());
 	}
+
+	#endregion Test Methods
 }
