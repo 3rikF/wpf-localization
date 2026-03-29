@@ -5,6 +5,7 @@ using System.Windows;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Models;
+using ErikForwerk.TestAbstractions.Models;
 
 using Xunit.Abstractions;
 
@@ -13,7 +14,7 @@ namespace ErikForwerk.Localization.WPF.Tests.CoreLogic;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
-public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh) : IDisposable
+public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper toh) : TestBase(toh), IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Cleanup
@@ -35,11 +36,12 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 
 	public static TheoryData<string?[]> EmptyValuesData()
 	{
-		return [
-			[],
-			[null!],
-			[""],
-		];
+		return 
+			[
+				[],
+				[null],
+				[""],
+			];
 	}
 
 	#endregion Test Data
@@ -60,21 +62,53 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 	#region Convert Tests
 
 	[Fact]
-	public void Convert_WithValidKey_ReturnsTranslation()
+	public void Convert_WithValidStringKey_ReturnsTranslation()
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string TEST_KEY			= "DynamicKey";
 		const string TEST_TRANSLATION	= "Dynamische Übersetzung";
 
-		SingleCultureDictionary dict	= new(TEST_CULTURE);
-		dict.AddOrUpdate(TEST_KEY, TEST_TRANSLATION);
+		SingleCultureDictionary dict	= new(TEST_CULTURE)
+		{
+			{TEST_KEY, TEST_TRANSLATION}
+		};
 
 		using TranslationCoreBindingSource.TestModeTracker tmt = new ();
 		TranslationCoreBindingSource.Instance.CurrentCulture = TEST_CULTURE;
 		TranslationCoreBindingSource.Instance.AddTranslations(dict);
 
-		LocalizationDynamicTextConverter uut	= new();
 		object[] values							= [TEST_KEY, string.Empty];
+		LocalizationDynamicTextConverter uut	= new();
+
+		//--- ACT -------------------------------------------------------------
+		object result = uut.Convert(values, typeof(string), null!, TEST_CULTURE);
+
+		//--- ASSERT ----------------------------------------------------------
+		_ = Assert.IsType<string>(result);
+		Assert.Equal(TEST_TRANSLATION, result);
+	}
+
+	[Fact]
+	public void Convert_WithValidObjectKey_ReturnsTranslation()
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		
+		const BaselineAlignment TEST_KEY	= BaselineAlignment.Center;
+		const string TEST_TRANSLATION		= "Dynamische Übersetzung";
+
+		SingleCultureDictionary dict		= new(TEST_CULTURE)
+		{
+			//--- the localization system should convert the enum to this string key internally, ---
+			//--- so we add the translation with the expected string key ---
+			{"BaselineAlignment.Center", TEST_TRANSLATION}
+		};
+
+		using TranslationCoreBindingSource.TestModeTracker tmt = new ();
+		TranslationCoreBindingSource.Instance.CurrentCulture = TEST_CULTURE;
+		TranslationCoreBindingSource.Instance.AddTranslations(dict);
+
+		object[] values							= [TEST_KEY, string.Empty];
+		LocalizationDynamicTextConverter uut	= new();
 
 		//--- ACT -------------------------------------------------------------
 		object result = uut.Convert(values, typeof(string), null!, TEST_CULTURE);
@@ -108,12 +142,14 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 		const string INNER_KEY					= "InnerKey";
 		const string INNER_TRANSLATION			= "innerer Wert";
 
-		_toh.WriteLine($"Translating:    [{TEST_TRANSLATION_RAW}]");
-		_toh.WriteLine($"With inner key: [{INNER_KEY}] => [{INNER_TRANSLATION}]");
-		_toh.WriteLine("");
+		TestConsole.WriteLine($"Translating        {B(TEST_TRANSLATION_RAW)}");
+		TestConsole.WriteLine($"With inner key     {B(INNER_KEY)} => {B(INNER_TRANSLATION)}");
+		TestConsole.WriteLine("");
 
-		SingleCultureDictionary dict = new(TEST_CULTURE);
-		dict.AddOrUpdate(INNER_KEY, INNER_TRANSLATION);
+		SingleCultureDictionary dict = new(TEST_CULTURE)
+		{
+			{INNER_KEY, INNER_TRANSLATION}
+		};
 
 		using TranslationCoreBindingSource.TestModeTracker tmt = new ();
 		TranslationCoreBindingSource.Instance.CurrentCulture = TEST_CULTURE;
@@ -126,14 +162,14 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper _toh
 		//--- ACT -------------------------------------------------------------
 		object result = uut.Convert(values, typeof(string), parameter, TEST_CULTURE);
 
-		_toh.WriteLine($"Expected translation: [{TEST_TRANSLATION_COOKED}]");
-		_toh.WriteLine($"Actual translation:   [{result}]");
+		TestConsole.WriteLine($"Expected translation    {B(TEST_TRANSLATION_COOKED)}");
+		TestConsole.WriteLine($"Actual translation      {B(result)}");
 
 		//--- ASSERT ----------------------------------------------------------
 		_ = Assert.IsType<string>(result);
 		Assert.Equal(TEST_TRANSLATION_COOKED, result);
 
-		_toh.WriteLine("[✔️ Passed] Inner placeholder was correctly replaced.");
+		TestConsole.WriteLine("[✔️ Passed] Inner placeholder was correctly replaced.");
 	}
 
 	[Fact]
