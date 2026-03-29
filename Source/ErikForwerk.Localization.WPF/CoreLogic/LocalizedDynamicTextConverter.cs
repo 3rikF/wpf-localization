@@ -28,7 +28,7 @@ internal sealed class LocalizationDynamicTextConverter : IMultiValueConverter
 
 		else
 		{
-			object value = values[0]!;
+			object value = values[0];
 
 			// If the bound value is already a string, use it directly as the key.
 			// For any other type, format the key as "TypeName.Value" (e.g. "Status.Active").
