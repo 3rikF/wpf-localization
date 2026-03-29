@@ -158,37 +158,13 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	[GeneratedRegex(@"%([^%]+)%")]
 	private static partial Regex MatchPlaceholderRegEx();
 
-	#endregion Private Methods
-
-	//-----------------------------------------------------------------------------------------------------------------
-	#region Public Methods
-
-	public string GetTranslation(string key)
-		=> GetTranslation(key, parsePlaceholders: false);
-
-	public string GetTranslation(string key, bool parsePlaceholders)
-	{
-		if (string.IsNullOrEmpty(key))
-			return string.Empty;
-
-		if (_dictionaries.TryGetValue(_currentCulture, out ISingleCultureDictionary? existingDictionary))
-		{
-			if (parsePlaceholders)
-				return ParseLocalizedText(existingDictionary, key/*, []*/);
-			else
-				return existingDictionary.GetTranslation(key);
-		}
-		else
-			return key.FormatAsNotTranslated();
-	}
-
-	private static string ParseLocalizedText(ISingleCultureDictionary existingDictionary, string text)
+	private static string TranslatePlaceholderText(ISingleCultureDictionary existingDictionary, string text)
 	{
 		return MatchPlaceholderRegEx().Replace(text, match =>
-		{
-			string innerKey = match.Groups[1].Value;
-			return existingDictionary.GetTranslation(innerKey);
-		});
+			{
+				string innerKey = match.Groups[1].Value;
+				return existingDictionary.GetTranslation(innerKey);
+			});
 	}
 
 	/// <summary>
@@ -212,6 +188,34 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 		RaiseLocalizationChanged(ELocalizationChanges.All);
 	}
 
+	#endregion Private Methods
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Public Methods
+
+	public string GetTranslation(string key)
+		=> GetTranslation(_currentCulture, key, parsePlaceholders: false);
+
+	public string GetTranslation(string key, bool parsePlaceholders)
+		=> GetTranslation(_currentCulture, key, parsePlaceholders);
+
+	public string GetTranslation(CultureInfo culture, string key)
+		=> GetTranslation(culture, key, parsePlaceholders: false);
+
+	public string GetTranslation(CultureInfo culture, string key, bool parsePlaceholders)
+	{
+		if (string.IsNullOrEmpty(key))
+			return string.Empty;
+
+		else if (!_dictionaries.TryGetValue(culture, out ISingleCultureDictionary? existingDictionary))
+			return key.FormatAsNotTranslated();
+
+		else if (parsePlaceholders)
+			return TranslatePlaceholderText(existingDictionary, key);
+
+		else
+			return existingDictionary.GetTranslation(key);
+	}
 
 	#endregion Public Methods
 

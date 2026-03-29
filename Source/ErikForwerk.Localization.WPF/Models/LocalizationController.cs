@@ -84,5 +84,11 @@ public sealed class LocalizationController : ILocalizationCore
 	public string GetTranslation(string key, bool parsePlaceholders)
 		=> _localizationCore.GetTranslation(key, parsePlaceholders);
 
+	public string GetTranslation(CultureInfo culture, string key)
+		=> _localizationCore.GetTranslation(culture, key);
+
+	public string GetTranslation(CultureInfo culture, string key, bool parsePlaceholders)
+		=> _localizationCore.GetTranslation(culture, key, parsePlaceholders);
+
 	#endregion Public Methods
 }

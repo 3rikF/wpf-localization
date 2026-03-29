@@ -22,4 +22,8 @@ public interface ILocalizationCore
 	string GetTranslation(string key);
 
 	string GetTranslation(string key, bool parsePlaceholders);
+
+	string GetTranslation(CultureInfo culture, string key);
+
+	string GetTranslation(CultureInfo culture, string key, bool parsePlaceholders);
 }
