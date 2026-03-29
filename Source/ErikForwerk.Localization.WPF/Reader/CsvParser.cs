@@ -81,13 +81,12 @@ internal sealed class CsvParser
 
 	private static string UnescapeLocalization(string field)
 	{
-		return field
-			.Trim()
+		return new StringBuilder(field.Trim())
 			.Replace("\\r\\n", "\r\n")
 			.Replace("\\r", "\r")
 			.Replace("\\n", "\n")
 			.Replace("\\t", "\t")
-			;
+			.ToString();
 	}
 
 	private static string[] SplitLine(ReadOnlySpan<char> line)
