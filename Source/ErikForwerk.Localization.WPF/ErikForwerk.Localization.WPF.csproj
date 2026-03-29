@@ -30,6 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Enables consumers of the package to step into the source code during debugging, even if they don't have the source files locally. -->
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
