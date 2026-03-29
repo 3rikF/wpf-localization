@@ -1,29 +1,35 @@
 ﻿
+// ignore spelling: お願いします
+
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Transactions;
 using System.Windows;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Interfaces;
 using ErikForwerk.Localization.WPF.Models;
+using ErikForwerk.TestAbstractions.Models;
 
 using Moq;
+
+using Xunit.Abstractions;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 namespace ErikForwerk.Localization.WPF.Tests.Models;
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
-public sealed class LocalizationControllerTests: IDisposable
+public sealed class LocalizationControllerTests : TestBase, IDisposable
 {
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Cleanup
 
 	private readonly TranslationCoreBindingSource.TestModeTracker _testModetracker = new ();
 
-
 	[ExcludeFromCodeCoverage(Justification = "Untestable race condition at test run time")]
-	public LocalizationControllerTests()
+	public LocalizationControllerTests(ITestOutputHelper toh)
+		: base(toh)
 	{
 		//--- initialize WPF Application if not already done ---
 		if (Application.Current is null)
@@ -38,7 +44,6 @@ public sealed class LocalizationControllerTests: IDisposable
 			}
 		}
 	}
-
 
 	public void Dispose()
 	{
@@ -80,12 +85,12 @@ public sealed class LocalizationControllerTests: IDisposable
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		//--- ACT -------------------------------------------------------------
-		LocalizationController uut = new();
+		LocalizationController sut = new();
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.NotNull(uut);
-		Assert.NotNull(uut.CurrentCulture);
-		Assert.NotNull(uut.SupportedCultures);
+		Assert.NotNull(sut);
+		Assert.NotNull(sut.CurrentCulture);
+		Assert.NotNull(sut.SupportedCultures);
 	}
 
 	[Fact]
@@ -93,10 +98,10 @@ public sealed class LocalizationControllerTests: IDisposable
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		//--- ACT -------------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(TEST_CULTURE_EN, out _);
+		LocalizationController sut = CreateTestLocalizationController(TEST_CULTURE_EN, out _);
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.NotNull(uut);
+		Assert.NotNull(sut);
 	}
 
 	#endregion Construction
@@ -108,12 +113,12 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void CurrentCulture_ReturnsCultureFromCore()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore> mockCore);
 
 		//--- ACT -------------------------------------------------------------
-		CultureInfo result = uut.CurrentCulture;
+		CultureInfo result = sut.CurrentCulture;
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(TEST_CULTURE_DE, result);
@@ -125,14 +130,14 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void CurrentCulture_UpdatesCultureInCoreAndWindow()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_EN
 			, out Mock<ILocalizationCore>? mockCore);
 		//--- ACT -------------------------------------------------------------
-		uut.CurrentCulture = TEST_CULTURE_DE;
+		sut.CurrentCulture = TEST_CULTURE_DE;
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
+		Assert.Equal(TEST_CULTURE_DE, sut.CurrentCulture);
 
 		mockCore.VerifySet(x => x.CurrentCulture = TEST_CULTURE_DE, Times.Once());
 	}
@@ -146,12 +151,12 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void SupportedCultures_Get_ReturnsCulturesFromCore()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
 		//--- ACT -------------------------------------------------------------
-		IEnumerable<CultureInfo> result = uut.SupportedCultures;
+		IEnumerable<CultureInfo> result = sut.SupportedCultures;
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.NotNull(result);
@@ -169,14 +174,14 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void AddTranslations_ValidDictionary_DelegatesToCore()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
 		List<ISingleCultureDictionary> dictionaries = new();
 
 		//--- ACT -------------------------------------------------------------
-		uut.AddTranslations(dictionaries);
+		sut.AddTranslations(dictionaries);
 
 		//--- ASSERT ----------------------------------------------------------
 		mockCore.Verify(x => x.AddTranslations(dictionaries), Times.Once());
@@ -186,7 +191,7 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void AddTranslations_MultipleDictionaries_DelegatesToCoreForEach()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
@@ -197,8 +202,8 @@ public sealed class LocalizationControllerTests: IDisposable
 		dict2.AddOrUpdate("Hello", "Bonjour");
 
 		//--- ACT -------------------------------------------------------------
-		uut.AddTranslations(dict1);
-		uut.AddTranslations(dict2);
+		sut.AddTranslations(dict1);
+		sut.AddTranslations(dict2);
 
 		//--- ASSERT ----------------------------------------------------------
 		mockCore.Verify(x => x.AddTranslations(It.IsAny<ISingleCultureDictionary>()), Times.Exactly(2));
@@ -210,7 +215,7 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void AddTranslations_ValidReader_DelegatesToCore()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
@@ -220,7 +225,7 @@ public sealed class LocalizationControllerTests: IDisposable
 			.Returns([]);
 
 		//--- ACT -------------------------------------------------------------
-		uut.AddTranslations(mockReader.Object);
+		sut.AddTranslations(mockReader.Object);
 
 		//--- ASSERT ----------------------------------------------------------
 		mockCore.Verify(x => x.AddTranslations(mockReader.Object), Times.Once());
@@ -236,14 +241,14 @@ public sealed class LocalizationControllerTests: IDisposable
 	public void AddTranslationsFromCsvResource_ValidResource_LoadsAndAddsDictionaries()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
 		const string RESOURCE_PATH = @"TestResources/TestTranslations.de-DE.csv";
 
 		//--- ACT -------------------------------------------------------------
-		uut.AddTranslationsFromCsvResource(RESOURCE_PATH);
+		sut.AddTranslationsFromCsvResource(RESOURCE_PATH);
 
 		//--- ASSERT ----------------------------------------------------------
 		mockCore.Verify(x => x.AddTranslations(It.IsAny<ILocalizationReader>()), Times.AtLeastOnce());
@@ -259,21 +264,21 @@ public sealed class LocalizationControllerTests: IDisposable
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		//--- ACT -------------------------------------------------------------
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore>? mockCore);
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal(TEST_CULTURE_DE, uut.CurrentCulture);
-		Assert.NotEmpty(uut.SupportedCultures);
+		Assert.Equal(TEST_CULTURE_DE, sut.CurrentCulture);
+		Assert.NotEmpty(sut.SupportedCultures);
 
 		// Test setting culture
-		uut.CurrentCulture = TEST_CULTURE_EN;
-		Assert.Equal(TEST_CULTURE_EN, uut.CurrentCulture);
+		sut.CurrentCulture = TEST_CULTURE_EN;
+		Assert.Equal(TEST_CULTURE_EN, sut.CurrentCulture);
 
 		// Test adding translations
 		SingleCultureDictionary dict = new(TEST_CULTURE_FR);
-		uut.AddTranslations(dict);
+		sut.AddTranslations(dict);
 		mockCore.Verify(x => x.AddTranslations(dict), Times.Once());
 	}
 
@@ -283,13 +288,13 @@ public sealed class LocalizationControllerTests: IDisposable
 	#region GetTranslation Method
 
 	[Fact]
-	public void GetTranslation_WithKey_DelegatesToCore()
+	public void GetTranslation_WithCurrentCulture_WithKey_DelegatesToCore()
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string TEST_KEY			= "TestKey";
 		const string EXPECTED_VALUE		= "TranslatedValue";
 
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore> mockCore);
 
@@ -298,7 +303,7 @@ public sealed class LocalizationControllerTests: IDisposable
 			.Returns(EXPECTED_VALUE);
 
 		//--- ACT -------------------------------------------------------------
-		string result = uut.GetTranslation(TEST_KEY);
+		string result = sut.GetTranslation(TEST_KEY);
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(EXPECTED_VALUE, result);
@@ -308,13 +313,13 @@ public sealed class LocalizationControllerTests: IDisposable
 	[Theory]
 	[InlineData(true)]
 	[InlineData(false)]
-	public void GetTranslation_WithKeyAndParsePlaceholders_DelegatesToCore(bool parsePlaceholders)
+	public void GetTranslation_WithCurrentCulture_WithKeyAndParsePlaceholders_DelegatesToCore(bool parsePlaceholders)
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string TEST_KEY			= "TestKey";
 		const string EXPECTED_VALUE		= "TranslatedValue";
 
-		LocalizationController uut = CreateTestLocalizationController(
+		LocalizationController sut = CreateTestLocalizationController(
 			TEST_CULTURE_DE
 			, out Mock<ILocalizationCore> mockCore);
 
@@ -323,11 +328,69 @@ public sealed class LocalizationControllerTests: IDisposable
 			.Returns(EXPECTED_VALUE);
 
 		//--- ACT -------------------------------------------------------------
-		string result = uut.GetTranslation(TEST_KEY, parsePlaceholders);
+		string result = sut.GetTranslation(TEST_KEY, parsePlaceholders);
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal(EXPECTED_VALUE, result);
 		mockCore.Verify(x => x.GetTranslation(TEST_KEY, parsePlaceholders), Times.Once());
+	}
+
+	[Theory]
+	[InlineData("de-DE")]	// setup as TEST_CULTURE_DE
+	[InlineData("en-US")]	// setup as TEST_CULTURE_EN
+	public void GetTranslation_SpecificCulture_NoPlaceholder_RoutesToDictionary(string testCultureName)
+	{
+		//--- ARRANGE ---------------------------------------------------
+		TestConsole.WriteLine($"Testing culture {B(testCultureName)}");
+
+		const string TEST_KEY		= "TestKey";
+		const string EXPECTED_VALUE	= "TranslatedValue";
+		CultureInfo TestCulture		= CultureInfo.CreateSpecificCulture(testCultureName);
+
+		//--- setup mock core to return expected value for the specific culture and key ---
+		LocalizationController sut	= CreateTestLocalizationController(TEST_CULTURE_FR, out Mock<ILocalizationCore> mockCore);
+		_ = mockCore
+			.Setup(x => x.GetTranslation(TestCulture, TEST_KEY))
+			.Returns(EXPECTED_VALUE);
+
+		//--- ACT -------------------------------------------------------
+		string translation = sut.GetTranslation(TestCulture, TEST_KEY);
+
+		//--- ASSERT -----------------------------------------------------
+		Assert.Equal(EXPECTED_VALUE, translation);										//--- tests, the value was return without change ---
+		mockCore.Verify(x => x.GetTranslation(TestCulture, TEST_KEY), Times.Once());	//--- tests, the call was routed to the core with the specific culture and key ---
+
+		TestConsole.WriteLine($"[✔️ PASSED] Call was routed to core with culture {B(testCultureName)} and key {B(TEST_KEY)}");
+	}
+
+	[Theory]
+	[InlineData(true,	"de-DE")]
+	[InlineData(true,	"en-US")]
+	[InlineData(false,	"de-DE")]
+	[InlineData(false,	"en-US")]
+	public void GetTranslation_WithSpecificCulture_WithKeyAndParsePlaceholders_DelegatesToCore(bool parsePlaceholders, string testCultureName)
+	{
+		//--- ARRANGE ---------------------------------------------------------
+		TestConsole.WriteLine($"Testing culture {B(testCultureName)}");
+
+		const string TEST_KEY				= "TestKey";
+		const string EXPECTED_TRANSLATION	= "TranslatedValue";
+		CultureInfo TestCulture				= CultureInfo.CreateSpecificCulture(testCultureName);
+
+		//--- setup mock core to return expected value for the specific culture, key, and parsePlaceholders flag ---
+		LocalizationController sut	= CreateTestLocalizationController(TEST_CULTURE_FR, out Mock<ILocalizationCore> mockCore);
+		_ = mockCore
+			.Setup(x => x.GetTranslation(TestCulture, TEST_KEY, parsePlaceholders))
+			.Returns(EXPECTED_TRANSLATION);
+
+		//--- ACT -------------------------------------------------------------
+		string translation = sut.GetTranslation(TestCulture, TEST_KEY, parsePlaceholders);
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(EXPECTED_TRANSLATION, translation);	//--- tests, the value was return without change ---
+		mockCore.Verify(x => x.GetTranslation(TestCulture, TEST_KEY, parsePlaceholders), Times.Once());	//--- tests, the call was routed to the core with the specific culture and key ---
+
+		TestConsole.WriteLine($"[✔️ PASSED] Call was routed to core with culture {B(testCultureName)}, key {B(TEST_KEY)}, and parsePlaceholders={B(parsePlaceholders)}");
 	}
 
 	#endregion GetTranslation Method
