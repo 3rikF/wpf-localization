@@ -19,7 +19,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Title>WPF Localization</Title>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Copyright>Copyright © 2025 Erik Forwerk</Copyright>
+    <Copyright>Copyright © 2026 Erik Forwerk</Copyright>
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>
 
