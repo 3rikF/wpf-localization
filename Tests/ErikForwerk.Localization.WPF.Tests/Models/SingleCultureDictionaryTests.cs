@@ -1,6 +1,7 @@
 ﻿
 // ignore spelling: Tschüssikowski
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.Models;
@@ -23,10 +24,11 @@ public sealed class SingleCultureDictionaryTests
 	#region Construction
 
 	[Fact]
-	public void Ctor_NullCulture_ThrowsArgumentNullException()
+	public void Ctor_NullCulture_ThrowsException()
 	{
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => _ = new SingleCultureDictionary(null!));
 
 		//--- ASSERT ----------------------------------------------------------
@@ -57,6 +59,7 @@ public sealed class SingleCultureDictionaryTests
 
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.AddOrUpdate(null!, "SomeTranslation"));
 
 		//--- ASSERT ----------------------------------------------------------
@@ -101,8 +104,13 @@ public sealed class SingleCultureDictionaryTests
 	[Fact]
 	public void ArrayInitialization_NullKey_ThrowsException()
 	{
+		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_MESSAGE   = "Value cannot be null. (Parameter 'key')";
+
 		//--- ACT -------------------------------------------------------------
-		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() =>
+		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
+			() =>
 			{
 				_ = new SingleCultureDictionary(TEST_CULTURE)
 				{
@@ -112,6 +120,7 @@ public sealed class SingleCultureDictionaryTests
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Equal("key", ex.ParamName);
+		Assert.Equal(EXPECTED_MESSAGE, ex.Message);
 	}
 
 	[Fact]
@@ -122,7 +131,9 @@ public sealed class SingleCultureDictionaryTests
 		const string TEST_KEY			= "Hello";
 
 		//--- ACT -------------------------------------------------------------
-		ArgumentException ex = Assert.Throws<ArgumentException>(() =>
+		ArgumentException ex = Assert.Throws<ArgumentException>(
+			[ExcludeFromCodeCoverage]
+			() =>
 			{
 				_ = new SingleCultureDictionary(TEST_CULTURE)
 				{
@@ -140,7 +151,7 @@ public sealed class SingleCultureDictionaryTests
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string TEST_KEY		= "The Metal Idol";
-		SingleCultureDictionary sut	= 
+		SingleCultureDictionary sut	=
 
 		//--- ACT -------------------------------------------------------------
 		new (CultureInfo.InvariantCulture)
@@ -160,12 +171,12 @@ public sealed class SingleCultureDictionaryTests
 		const string TEST_KEY			= "Hello";
 		const string TEST_TRANSLATION	= "Hello World";
 
-		SingleCultureDictionary sut		= 
+		SingleCultureDictionary sut		=
 
 		//--- ACT -------------------------------------------------------------
 		new (TEST_CULTURE)
-		{ 
-			{ TEST_KEY, TEST_TRANSLATION } 
+		{
+			{ TEST_KEY, TEST_TRANSLATION }
 		};
 
 		//--- ASSERT ----------------------------------------------------------
@@ -186,6 +197,7 @@ public sealed class SingleCultureDictionaryTests
 
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.AddOrUpdate(null!));
 
 		//--- ASSERT ----------------------------------------------------------
@@ -196,6 +208,8 @@ public sealed class SingleCultureDictionaryTests
 	public void AddOrUpdate_CultureMismatch_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_MESSAGE		= "The provided dictionary contains a different culture.";
+		const string EXPECTED_PARAM_NAME	= "otherDict";
 		SingleCultureDictionary mainDictionary			= new (TEST_CULTURE);
 		SingleCultureDictionary additionalDictionary	= new (CultureInfo.GetCultureInfo("fr-FR"));
 
@@ -203,11 +217,12 @@ public sealed class SingleCultureDictionaryTests
 
 		//--- ACT -------------------------------------------------------------
 		ArgumentException ex = Assert.Throws<ArgumentException>(
+			[ExcludeFromCodeCoverage]
 			() => mainDictionary.AddOrUpdate(additionalDictionary));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal("otherDict", ex.ParamName);
-		Assert.Contains("The provided dictionary contains a different culture.", ex.Message);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+		Assert.Contains(EXPECTED_MESSAGE, ex.Message);
 	}
 
 	[Fact]
@@ -249,14 +264,18 @@ public sealed class SingleCultureDictionaryTests
 	public void ContainsKey_NullKey_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		SingleCultureDictionary sut = new (TEST_CULTURE);
+		const string EXPECTED_MESSAGE		= "Value cannot be null. (Parameter 'key')";
+		const string EXPECTED_PARAM_NAME	= "key";
+		SingleCultureDictionary sut			= new (TEST_CULTURE);
 
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.ContainsKey(null!));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal("key", ex.ParamName);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+		Assert.Contains(EXPECTED_MESSAGE, ex.Message);
 	}
 
 	[Fact]
@@ -289,14 +308,19 @@ public sealed class SingleCultureDictionaryTests
 	public void GetTranslation_NullKey_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_MESSAGE		= "Value cannot be null. (Parameter 'key')";
+		const string EXPECTED_PARAM_NAME	= "key";
+
 		SingleCultureDictionary sut = new (TEST_CULTURE);
 
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.GetTranslation(null!));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal("key", ex.ParamName);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+		Assert.Contains(EXPECTED_MESSAGE, ex.Message);
 	}
 
 	[Fact]

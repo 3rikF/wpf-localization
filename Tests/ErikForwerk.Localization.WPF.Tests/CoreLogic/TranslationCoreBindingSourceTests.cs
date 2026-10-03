@@ -1,6 +1,7 @@
 ﻿
 // ignore spelling: jp laceholders sut
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
@@ -162,12 +163,15 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 		//--- ACT & ASSERT -----------------------------------------------
 		_ = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.AddTranslations((ISingleCultureDictionary)null!));
 
 		_ = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.AddTranslations((IEnumerable<ISingleCultureDictionary>)null!));
 
 		_ = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => sut.AddTranslations((ILocalizationReader)null!));
 	}
 

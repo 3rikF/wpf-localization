@@ -1,5 +1,6 @@
 ﻿
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows;
 
@@ -36,7 +37,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper toh)
 
 	public static TheoryData<string?[]> EmptyValuesData()
 	{
-		return 
+		return
 			[
 				[],
 				[null],
@@ -92,7 +93,7 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper toh)
 	public void Convert_WithValidObjectKey_ReturnsTranslation()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		
+
 		const BaselineAlignment TEST_KEY	= BaselineAlignment.Center;
 		const string TEST_TRANSLATION		= "Dynamische Übersetzung";
 
@@ -217,11 +218,18 @@ public sealed class LocalizationDynamicTextConverterTests(ITestOutputHelper toh)
 	public void ConvertBack_ThrowsNotSupportedException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_MESSAGE = "Specified method is not supported.";
 		LocalizationDynamicTextConverter uut = new();
 
 		//--- ACT & ASSERT ----------------------------------------------------
-		_ = Assert.Throws<NotSupportedException>(
+		 NotSupportedException exception = Assert.Throws<NotSupportedException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.ConvertBack("SomeValue", [typeof(string)], null!, TEST_CULTURE));
+
+		//--- ASSERT ----------------------------------------------------------
+		Assert.Equal(EXPECTED_MESSAGE, exception.Message);
+
+		TestConsole.WriteLine("[✔️ Passed] ConvertBack throws NotSupportedException.");
 	}
 
 	#endregion ConvertBack Tests

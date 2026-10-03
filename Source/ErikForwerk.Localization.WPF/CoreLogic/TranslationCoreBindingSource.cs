@@ -26,14 +26,14 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	/// </remarks>
 	internal sealed class TestModeTracker : IDisposable
 	{
-		//-----------------------------------------------------------------------------------------------------------------
+		//-----------------------------------------------------------------------------------------
 		#region Fields
 
 		private readonly TranslationCoreBindingSource _originalInstance;
 
 		#endregion Fields
 
-		//-----------------------------------------------------------------------------------------------------------------
+		//-----------------------------------------------------------------------------------------
 		#region Construction
 		public TestModeTracker()
 		{

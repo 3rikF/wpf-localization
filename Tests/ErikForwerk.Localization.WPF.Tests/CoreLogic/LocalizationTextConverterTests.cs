@@ -1,4 +1,5 @@
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using ErikForwerk.Localization.WPF.CoreLogic;
@@ -65,6 +66,7 @@ public sealed class LocalizationTextConverterTests :IDisposable
 
 		//--- ACT -------------------------------------------------------------
 		NotSupportedException ex = Assert.Throws<NotSupportedException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.ConvertBack("SomeValue", typeof(string), null!, TEST_CULTURE));
 
 		//--- ASSERT ----------------------------------------------------------

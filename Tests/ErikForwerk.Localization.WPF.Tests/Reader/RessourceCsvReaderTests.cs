@@ -149,7 +149,7 @@ public sealed class ResourceCsvReaderTests
 	}
 
 	[Fact]
-	public void GetLocalizations_ResourcePathWithoutCulture_ThrowsInvalidOperationException()
+	public void GetLocalizations_ResourcePathWithoutCulture_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string RESOURCE_PATH			= "/TestResources/InvalidNoCulture.csv";
@@ -161,6 +161,7 @@ public sealed class ResourceCsvReaderTests
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.GetLocalizations());
 
 		//--- ASSERT ----------------------------------------------------------
@@ -171,7 +172,7 @@ public sealed class ResourceCsvReaderTests
 	[Theory]
 	[InlineData("/NonExistent/Resource.de-DE.csv")]
 	[InlineData("/TestResources/NonExistent.en-US.csv")]
-	public void GetLocalizations_NonExistentResourcePath_ThrowsFileFormatException(string resourcePath)
+	public void GetLocalizations_NonExistentResourcePath_ThrowsException(string resourcePath)
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		string expectedMessagePart = resourcePath.TrimStart('/').ToLower();
@@ -182,6 +183,7 @@ public sealed class ResourceCsvReaderTests
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		IOException ex = Assert.Throws<IOException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.GetLocalizations());
 
 		//--- ASSERT ----------------------------------------------------------
@@ -201,18 +203,20 @@ public sealed class ResourceCsvReaderTests
 		_testConsole.WriteLine($"Testing key:[{keyWithEscapes}]");
 
 		//--- ACT -------------------------------------------------------------
-		ISingleCultureDictionary[]	localizations	= uut.GetLocalizations();
-		string						value			= localizations[0].GetTranslation(keyWithEscapes);
+		ISingleCultureDictionary[] localizations	= uut.GetLocalizations();
+		string value								= localizations[0].GetTranslation(keyWithEscapes);
+
+		_testConsole.WriteLine($"Value: [{value}]");
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Contains("\r\n",	value);
 		Assert.Contains("\n",	value);
+
 		_testConsole.WriteLine($"[✔️ Passed] Escaped characters parsed correctly.");
-		_testConsole.WriteLine($"Value: [{value}]");
 	}
 
 	[Fact]
-	public void GetLocalizations_ResourceWithEmptyContent_ThrowsFileFormatException()
+	public void GetLocalizations_ResourceWithEmptyContent_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		const string RESOURCE_PATH			= "/TestResources/EmptyFile.de-DE.csv";
@@ -223,10 +227,12 @@ public sealed class ResourceCsvReaderTests
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		FileFormatException ex = Assert.Throws<FileFormatException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.GetLocalizations());
 
 		//--- ASSERT ----------------------------------------------------------
 		Assert.Contains(EXPECTED_MESSAGE_PART, ex.Message);
+
 		_testConsole.WriteLine($"[✔️ Passed] FileFormatException thrown for empty resource.");
 	}
 
