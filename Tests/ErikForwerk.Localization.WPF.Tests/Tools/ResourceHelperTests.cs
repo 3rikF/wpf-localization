@@ -52,15 +52,18 @@ public sealed class ResourceHelperTests
 	public void GetResourceText_NullOrWhitespaceInput_ThrowsException(string? resourcePath)
 	{
 		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_PARAM_NAME = "resourcePath";
+
 		_testConsole.WriteLine($"Testing with resourcePath: [{resourcePath ?? "<null>"}]");
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		ArgumentException ex = resourcePath is null
-			? Assert.Throws<ArgumentNullException>(() => ResourceHelper.GetResourceText(resourcePath!))
-			: Assert.Throws<ArgumentException>(() => ResourceHelper.GetResourceText(resourcePath!));
+			? Assert.Throws<ArgumentNullException>([ExcludeFromCodeCoverage]() => ResourceHelper.GetResourceText(resourcePath!))
+			: Assert.Throws<ArgumentException>([ExcludeFromCodeCoverage]() => ResourceHelper.GetResourceText(resourcePath!));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal("resourcePath",ex.ParamName);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+
 		_testConsole.WriteLine($"[✔️ Passed] Argument(Null)Exception thrown for null/whitespace input.");
 	}
 
@@ -90,7 +93,7 @@ public sealed class ResourceHelperTests
 	[InlineData("/NonExistent/Resource.txt")]
 	[InlineData("/TestResources/NonExistent.txt")]
 	[InlineData("/Invalid/Path/To/Resource.xyz")]
-	public void GetResourceText_InvalidResourcePath_ThrowsResourceReferenceKeyNotFoundException(string resourcePath)
+	public void GetResourceText_InvalidResourcePath_ThrowsException(string resourcePath)
 	{
 		//--- ARRANGE ---------------------------------------------------------
 		string expectedMessageSubstring = resourcePath.TrimStart('/').ToLower();
@@ -99,10 +102,11 @@ public sealed class ResourceHelperTests
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		IOException ex = Assert.Throws<IOException>(
+			[ExcludeFromCodeCoverage]
 			() => ResourceHelper.GetResourceText(resourcePath));
 
 		Assert.Contains(expectedMessageSubstring, ex.Message);
-		_testConsole.WriteLine($"[✔️ Passed] ResourceReferenceKeyNotFoundException thrown for invalid path.");
+		_testConsole.WriteLine($"[✔️ Passed] Throws expected exception");
 	}
 
 	[Fact]
@@ -124,7 +128,7 @@ public sealed class ResourceHelperTests
 		Assert.Contains(EXPECTED_LINE_1,	result);
 		Assert.Contains(EXPECTED_LINE_2,	result);
 		Assert.Contains(EXPECTED_LINE_3,	result);
-		_testConsole.WriteLine($"[✔️ Passed] All expected lines found in multi-line content.");
+		_testConsole.WriteLine($"[✔️ Passed] All expected lines found in multi-line content");
 		_testConsole.WriteLine($"Content:\n{result}");
 	}
 

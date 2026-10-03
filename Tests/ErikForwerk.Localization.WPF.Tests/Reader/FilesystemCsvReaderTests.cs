@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 
@@ -70,33 +71,40 @@ public sealed class FilesystemCsvReaderTests : TestBase, IDisposable
 	#region Constructor Tests
 
 	[Fact]
-	public void Ctor_NullLanguagesFolder_ThrowsArgumentNullException()
+	public void Ctor_NullLanguagesFolder_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
+		const string EXPECTED_PARAM_NAME = "languagesFolder";
+
 		//--- ACT -------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => _ = new FilesystemCsvReader(null!));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Equal("languagesFolder", ex.ParamName);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+
 		TestConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for null languages folder.");
 	}
 
 	[Fact]
-	public void Ctor_NonExistentDirectory_ThrowsDirectoryNotFoundException()
+	public void Ctor_NonExistentDirectory_ThrowsException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		string nonExistentPath = Path.Combine(_testDirectory, "NonExistent");
+		const string EXPECTED_MESSAGE_PART	= "Languages directory not found";
+		string nonExistentPath				= Path.Combine(_testDirectory, "NonExistent");
 
 		TestConsole.WriteLine($"Testing with non-existent path: [{nonExistentPath}]");
 
 		//--- ACT -------------------------------------------------------------
 		DirectoryNotFoundException ex = Assert.Throws<DirectoryNotFoundException>(
+			[ExcludeFromCodeCoverage]
 			() => _ = new FilesystemCsvReader(nonExistentPath));
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Contains("Languages directory not found", ex.Message);
+		Assert.Contains(EXPECTED_MESSAGE_PART, ex.Message);
 		Assert.Contains(nonExistentPath, ex.Message);
+
 		TestConsole.WriteLine($"[✔️ Passed] {ex.GetType().Name} thrown for non-existent directory.");
 	}
 
@@ -189,17 +197,20 @@ public sealed class FilesystemCsvReaderTests : TestBase, IDisposable
 	public void GetLocalizations_CsvFileWithoutCulture_ThrowsInvalidOperationException()
 	{
 		//--- ARRANGE ---------------------------------------------------------
-		string invalidFileName	= CreateTestCsvFile(null, new(){{ "TestKey1", "TestWert1" }});
-		FilesystemCsvReader uut = new(_testDirectory);
+		const string EXPECTED_MESSAGE_PART	= "IETF-language-tag";
+		string invalidFileName				= CreateTestCsvFile(null, new(){{ "TestKey1", "TestWert1" }});
+		FilesystemCsvReader uut				= new(_testDirectory);
 
 		TestConsole.WriteLine($"Testing with CSV file without culture tag: [{invalidFileName}]");
 
 		//--- ACT & ASSERT ----------------------------------------------------
 		InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+			[ExcludeFromCodeCoverage]
 			() => uut.GetLocalizations());
 
 		//--- ASSERT ----------------------------------------------------------
-		Assert.Contains("IETF-language-tag", ex.Message);
+		Assert.Contains(EXPECTED_MESSAGE_PART, ex.Message);
+
 		TestConsole.WriteLine("[✔️ Passed] InvalidOperationException thrown for file without culture tag.");
 	}
 

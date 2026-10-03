@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -115,7 +116,7 @@ public sealed class CsvParserTests(ITestOutputHelper TestConsole)
 		Assert.Equal(expectedValue, result[expectedKey]);
 	}
 
-
+	// ignore spelling: nwith nnewlines twith ttabs
 	[Theory]
 	[InlineData(@"key1;value\r\nwith\nnewlines",	true, "key1",					"value\r\nwith\nnewlines")]
 	[InlineData(@"key2;value\twith\ttabs",			true, "key2",					"value\twith\ttabs")]
@@ -157,15 +158,19 @@ public sealed class CsvParserTests(ITestOutputHelper TestConsole)
 	public void ParseStream_NullStream_ThrowsArgumentNullException()
 	{
 		//--- ARRANGE -------------------------------------------------------------
+		const string EXPECTED_PARAM_NAME	= "stream";
+		const string EXPECTED_MESSAGE		= "Value cannot be null. (Parameter 'stream')";
+
 		Stream? stream = null;
 
 		//--- ACT -----------------------------------------------------------------
 		ArgumentNullException ex = Assert.Throws<ArgumentNullException>(
+			[ExcludeFromCodeCoverage]
 			() => CsvParser.ParseStream(stream!));
 
 		//--- ASSERT --------------------------------------------------------------
-		Assert.Equal("stream", ex.ParamName);
-		Assert.Contains("Value cannot be null.", ex.Message);
+		Assert.Equal(EXPECTED_PARAM_NAME, ex.ParamName);
+		Assert.Contains(EXPECTED_MESSAGE, ex.Message);
 	}
 
 	[Theory]
