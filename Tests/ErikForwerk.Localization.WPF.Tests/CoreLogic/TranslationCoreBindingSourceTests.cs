@@ -7,6 +7,7 @@ using System.Globalization;
 using ErikForwerk.Localization.WPF.CoreLogic;
 using ErikForwerk.Localization.WPF.Enums;
 using ErikForwerk.Localization.WPF.Interfaces;
+using ErikForwerk.Localization.WPF.Models;
 using ErikForwerk.TestAbstractions.Models;
 
 using Moq;
@@ -40,6 +41,33 @@ static file class AssertHelper
 [Collection("82A46DF4-F8CA-4E66-8606-DF49164DEFBB")]
 public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutputHelper) : TestBase(testOutputHelper), IDisposable
 {
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Testdata
+
+	public static TheoryData<string, object[], string> GetTranslationFormatData()
+	{
+		TheoryData<string, object[], string> data = new()
+		{
+			{ string.Empty,				["value"], string.Empty },
+			{ "InvalidKey",				["value"], "!!!InvalidKey!!!" },
+			{ "PlainKey",				Array.Empty<object>(), "Plain translation" },
+			{ "PlaceholderKey",			["World"], "Hello World" },
+			{ "RepeatedPlaceholderKey",	["World"], "Hello World World" }
+		};
+		return data;
+	}
+
+	#endregion Testdata
+
+	//-----------------------------------------------------------------------------------------------------------------
+	#region Meta Tests
+
+	[Fact]
+	public void GetTranslationFormatData_ContainsTestCases()
+		=> Assert.NotEmpty(GetTranslationFormatData());
+
+	#endregion Meta Tests
+
 	//-----------------------------------------------------------------------------------------------------------------
 	#region Test Cleanup
 
@@ -210,12 +238,12 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		//--- ARRANGE ---------------------------------------------------
 		CultureInfo ci1 = CultureInfo.CreateSpecificCulture("de-DE");
 		CultureInfo ci2 = CultureInfo.CreateSpecificCulture("en-US");
-		
+
 		//--- the first dictionary is added ---
 		Mock<ISingleCultureDictionary> mockDict1= new();
 		mockDict1.SetupGet(m => m.Culture).Returns(ci1).Verifiable(Times.AtLeastOnce());
 		mockDict1.Setup(m => m.GetAllTranslations()).Verifiable(Times.Never());
-		
+
 		//--- the second dictionary is added ---
 		Mock<ISingleCultureDictionary> mockDict2= new();
 		mockDict2.SetupGet(m => m.Culture).Returns(ci2).Verifiable(Times.AtLeastOnce());
@@ -523,6 +551,31 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		mockDict.VerifyAll();
 	}
 
+	[Theory]
+	[MemberData(nameof(GetTranslationFormatData))]
+	public void GetTranslationFormat_WithKeyAndArgs_ReturnsExpectedTranslation(string key, object[] args, string expectedTranslation)
+	{
+		//--- ARRANGE ---------------------------------------------------
+		CultureInfo testCulture			= CultureInfo.CreateSpecificCulture("de-DE");
+		SingleCultureDictionary dict	= new(testCulture)
+		{
+			{ "PlainKey",				"Plain translation" },
+			{ "PlaceholderKey",			"Hello {0}" },
+			{ "RepeatedPlaceholderKey", "Hello {0} {0}" },
+		};
+
+		using TranslationCoreBindingSource.TestModeTracker tracker = new();
+		TranslationCoreBindingSource sut = TranslationCoreBindingSource.Instance;
+		sut.CurrentCulture = testCulture;
+		sut.AddTranslations(dict);
+
+		//--- ACT -------------------------------------------------------
+		string result = sut.GetTranslationFormat(key, args);
+
+		//--- ASSERT -----------------------------------------------------
+		Assert.Equal(expectedTranslation, result);
+	}
+
 	#endregion GetTranslation (Current Culture)
 
 	//-----------------------------------------------------------------------------------------------------------------
@@ -530,7 +583,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 
 	[Theory]
 	[InlineData("de-DE", "Bitte")]
-	[InlineData("en-US", "Please")]	
+	[InlineData("en-US", "Please")]
 	[InlineData("ja-JP", "お願いします")]
 	public void GetTranslation_SpecificCulture_RoutesToDictionary(string cultureName, string expectedTranslation)
 	{
@@ -561,7 +614,7 @@ public sealed class TranslationCoreBindingSourceTests(ITestOutputHelper testOutp
 		string result = sut.GetTranslation(TestCulture, TEST_KEY);
 
 		TestConsole.WriteLine($"Expected translation    {B(expectedTranslation)}");
-		TestConsole.WriteLine($"Actual translation      {B(result)}");	
+		TestConsole.WriteLine($"Actual translation      {B(result)}");
 
 		//--- ASSERT -----------------------------------------------------
 		Assert.Equal(expectedTranslation, result);

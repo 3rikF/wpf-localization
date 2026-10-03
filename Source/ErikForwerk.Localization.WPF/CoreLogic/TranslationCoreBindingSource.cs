@@ -196,6 +196,9 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 	public string GetTranslation(string key)
 		=> GetTranslation(_currentCulture, key, parsePlaceholders: false);
 
+	public string GetTranslationFormat(string key, params object[] args)
+		=> GetTranslationFormat(_currentCulture, key, args);
+
 	public string GetTranslation(string key, bool parsePlaceholders)
 		=> GetTranslation(_currentCulture, key, parsePlaceholders);
 
@@ -216,6 +219,9 @@ internal sealed partial class TranslationCoreBindingSource : ITranslationChanged
 		else
 			return existingDictionary.GetTranslation(key);
 	}
+
+	public string GetTranslationFormat(CultureInfo culture, string key, params object[] args)
+		=> string.Format(GetTranslation(culture, key, parsePlaceholders: false), args);
 
 	#endregion Public Methods
 
