@@ -31,21 +31,22 @@ jobs:
     runs-on: windows-latest
 
     permissions:
-      contents: read  # Required to checkout code
-
+      contents: read   # Required to checkout code
+      id-token: write  # enable GitHub OIDC token issuance for this job (for NuGet)
+      
     env:
       # Replace with your solution name, i.e. MyWpfApp.sln.
       SOLUTION_NAME: "./WpfLocalization.slnx"
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: 9.0.x
 
@@ -195,15 +196,25 @@ jobs:
         # Setzt den exakten Pfad als Output
         echo "nupkg_path=$NUPKG_PATH" >> $GITHUB_OUTPUT
 
+    # Get a short-lived NuGet API key
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        # Recommended: use a secret like ${{ secrets.NUGET_USER }} for your nuget.org username (profile name), NOT your email address
+        # My five cents: The username is public, the GiHub-repo is linked in NuGet - this recommendation seems pointless.
+        user: ${{ secrets.NUGET_USER }}
+        
     # Publish to NuGet (Fail-Safe)
     - name: Publish to NuGet (Fail-Safe)
       shell: bash
       run: |
-        if dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate; then
+        if dotnet nuget push ${{ steps.pack.outputs.nupkg_path }} --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json --skip-duplicate; then
           echo "Published package: ${{ steps.pack.outputs.nupkg_path }}"
           PACKAGE_NAME=$(basename "$PROJECT_PATH" .csproj)
           PACKAGE_VERSION="${{ steps.version.outputs.version }}"
-          echo "Check online status at: https://www.nuget.org/packages/${PACKAGE_NAME}/${PACKAGE_VERSION}"
+          echo "Check new online status at: https://www.nuget.org/packages/${PACKAGE_NAME}/${PACKAGE_VERSION}"
+          echo "or all package-versions at: https://www.nuget.org/packages/${PACKAGE_NAME}"
         else
           echo "::error::Failed to publish package: ${{ steps.pack.outputs.nupkg_path }}"
           exit 1
