@@ -32,7 +32,6 @@ jobs:
 
     permissions:
       contents: read   # Required to checkout code
-      id-token: write  # enable GitHub OIDC token issuance for this job (for NuGet)
       
     env:
       # Replace with your solution name, i.e. MyWpfApp.sln.
@@ -90,7 +89,8 @@ jobs:
     permissions:
       contents: write  # Required to create and push tags
       packages: write  # Required for publishing packages
-
+      id-token: write  # enable GitHub OIDC token issuance for this job (for NuGet)
+ 
     env:
       SOLUTION_NAME: "./WpfLocalizationTest.slnx"
       PROJECT_PATH: "./Source/ErikForwerk.Localization.WPF/ErikForwerk.Localization.WPF.csproj"
