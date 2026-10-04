@@ -241,7 +241,7 @@ If a translation key is not found, the framework will display the key surrounded
 
 ### Content
 
-For a complete working example, check out the [WpfLocalizationExample](./Examples/WpfLocalizationExample) project included in this repository. It demonstrates:
+For a complete working example, check out the [WpfLocalizationExample](https://github.com/3rikF/wpf-localization/tree/a35409f62e8f11d876967639a599599dcd6ef19c/Examples/WpfLocalizationExample) project included in this repository. It demonstrates:
 
 - Setting up the LocalizationController
 - Static and dynamic translations
@@ -251,10 +251,7 @@ For a complete working example, check out the [WpfLocalizationExample](./Example
 
 ### Example Project Screenshots
 
-[![German Example Screenshot](./docs/screenshots/WpfLocalizationExample_german.png){width=250}](./docs/screenshots/WpfLocalizationExample_german.png)
-[![English Example Screenshot](./docs/screenshots/WpfLocalizationExample_english.png){width=250}](./docs/screenshots/WpfLocalizationExample_english.png)
-[![Russian Example Screenshot](./docs/screenshots/WpfLocalizationExample_russian.png){width=250}](./docs/screenshots/WpfLocalizationExample_russian.png)
-[![Japanese Example Screenshot](./docs/screenshots/WpfLocalizationExample_japanese.png){width=250}](./docs/screenshots/WpfLocalizationExample_japanese.png)
+<img width="250" alt="German Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_german.png" /> <img width="250" alt="English Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_english.png" /> <img width="250" alt="Russan Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_russian.png" /> <img width="250" alt="Japanese Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_japanese.png" /> 
 
 ## Requirements
 
