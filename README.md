@@ -225,7 +225,8 @@ Create a ComboBox to let users switch languages. The `SupportedCultures` and `Se
     SelectedItem		="{Binding SelectedCulture}" />
 ```
 
-The bindings connect to properties in your ViewModel that wrap the `LocalizationController.SupportedCultures` and `LocalizationController.CurrentCulture` properties. See the [Example Project](#example-project) for a complete implementation.
+The bindings connect to properties in your ViewModel that wrap the `LocalizationController.SupportedCultures` and `LocalizationController.CurrentCulture` properties.
+See the [Example Project](#example-project) for a complete implementation.
 
 ### 4. Handling Missing Translations
 
@@ -238,6 +239,8 @@ If a translation key is not found, the framework will display the key surrounded
 
 ## Example Project
 
+### Content
+
 For a complete working example, check out the [WpfLocalizationExample](./Examples/WpfLocalizationExample) project included in this repository. It demonstrates:
 
 - Setting up the LocalizationController
@@ -245,6 +248,13 @@ For a complete working example, check out the [WpfLocalizationExample](./Example
 - Placeholder replacement
 - Runtime language switching with a ComboBox
 - Multiple language support (English, German, Russian, Japanese)
+
+### Example Project Screenshots
+
+[![German Example Screenshot](./docs/screenshots/WpfLocalizationExample_german.png){width=250}](./docs/screenshots/WpfLocalizationExample_german.png)
+[![English Example Screenshot](./docs/screenshots/WpfLocalizationExample_english.png){width=250}](./docs/screenshots/WpfLocalizationExample_english.png)
+[![Russian Example Screenshot](./docs/screenshots/WpfLocalizationExample_russian.png){width=250}](./docs/screenshots/WpfLocalizationExample_russian.png)
+[![Japanese Example Screenshot](./docs/screenshots/WpfLocalizationExample_japanese.png){width=250}](./docs/screenshots/WpfLocalizationExample_japanese.png)
 
 ## Requirements
 

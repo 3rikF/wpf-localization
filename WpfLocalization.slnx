@@ -1,4 +1,13 @@
 <Solution>
-  <Project Path="Tests/ErikForwerk.Localization.WPF.Tests/ErikForwerk.Localization.WPF.Tests.csproj" Id="be05dd38-ae9b-42f2-af9c-a986af4cbe91" />
+  <Folder Name="/README/">
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/README/Screenshots/">
+    <File Path="docs/screenshots/WpfLocalizationExample_english.png" />
+    <File Path="docs/screenshots/WpfLocalizationExample_german.png" />
+    <File Path="docs/screenshots/WpfLocalizationExample_japanese.png" />
+    <File Path="docs/screenshots/WpfLocalizationExample_russian.png" />
+  </Folder>
   <Project Path="Source/ErikForwerk.Localization.WPF/ErikForwerk.Localization.WPF.csproj" />
+  <Project Path="Tests/ErikForwerk.Localization.WPF.Tests/ErikForwerk.Localization.WPF.Tests.csproj" Id="be05dd38-ae9b-42f2-af9c-a986af4cbe91" />
 </Solution>
