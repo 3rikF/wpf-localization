@@ -251,7 +251,10 @@ For a complete working example, check out the [WpfLocalizationExample](https://g
 
 ### Example Project Screenshots
 
-<img width="250" alt="German Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_german.png" /> <img width="250" alt="English Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_english.png" /> <img width="250" alt="Russan Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_russian.png" /> <img width="250" alt="Japanese Example Screenshot" src="https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_japanese.png" /> 
+[<img width="250" alt="German Example Screenshot" src="https://raw.githubusercontent.com/3rikF/wpf-localization/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_german.png" />](https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_german.png)
+[<img width="250" alt="English Example Screenshot" src="https://raw.githubusercontent.com/3rikF/wpf-localization/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_english.png" />](https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_english.png)
+[<img width="250" alt="Russan Example Screenshot" src="https://raw.githubusercontent.com/3rikF/wpf-localization/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_russian.png" />](https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_russian.png)
+[<img width="250" alt="Japanese Example Screenshot" src="https://raw.githubusercontent.com/3rikF/wpf-localization/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_japanese.png" />](https://github.com/3rikF/wpf-localization/blob/a35409f62e8f11d876967639a599599dcd6ef19c/docs/screenshots/WpfLocalizationExample_japanese.png)
 
 ## Requirements
 
